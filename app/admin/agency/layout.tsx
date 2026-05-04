@@ -11,6 +11,8 @@ export default async function AgencyAdminLayout({ children }: { children: React.
         ["Settlements", "/admin/agency/settlements"],
         ["Commissions", "/admin/agency/commissions"],
         ["Audit Logs", "/admin/agency/audit"],
+        ["Settings", "/admin/agency/settings"],
+
     ];
 
     const cookieStore = await cookies();
@@ -46,7 +48,7 @@ export default async function AgencyAdminLayout({ children }: { children: React.
                 <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>Agency Admin</h1>
                 <p style={{ marginTop: 10, color: "rgba(255,255,255,.75)" }}>Landmak Finance</p>
 
-                <nav style={{ marginTop: 44, display: "grid", gap: 12 }}>
+                <nav style={{ marginTop: 10, display: "grid", gap: 5 }}>
                     {links.map(([label, href]) => (
                         <Link
                             key={href}
