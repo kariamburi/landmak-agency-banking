@@ -1,4 +1,5 @@
 import { agencySettingsGet } from "@/app/lib/agencySettingsApi";
+import { deleteCommissionRule } from "./server-actions";
 
 function money(v: any) {
   return Number(v || 0).toLocaleString("en-KE", {
@@ -72,6 +73,7 @@ export default async function CommissionRulesPage() {
               <th style={th}>Commission</th>
               <th style={th}>Status</th>
               <th style={th}>Created</th>
+              <th style={th}>Actions</th>
             </tr>
           </thead>
 
@@ -110,6 +112,43 @@ export default async function CommissionRulesPage() {
                   {rule.created_at
                     ? new Date(rule.created_at).toLocaleDateString()
                     : "-"}
+                </td>
+                <td style={td}>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <a
+                      href={`/admin/agency/settings/commission-rules/${rule.id}/edit`}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        background: "#DBEAFE",
+                        color: "#1D4ED8",
+                        textDecoration: "none",
+                        fontWeight: 900,
+                        fontSize: 13,
+                      }}
+                    >
+                      Edit
+                    </a>
+
+                    <form action={deleteCommissionRule}>
+                      <input type="hidden" name="id" value={rule.id} />
+                      <button
+                        type="submit"
+                        style={{
+                          border: "none",
+                          padding: "8px 12px",
+                          borderRadius: 10,
+                          background: "#FEE2E2",
+                          color: "#991B1B",
+                          fontWeight: 900,
+                          fontSize: 13,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}
