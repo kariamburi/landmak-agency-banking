@@ -34,13 +34,13 @@ export default function AgencySettingsPage() {
         <SettingCard
           href="/admin/agency/settings/security"
           title="Security"
-          description="Manage OTP expiry, max attempts, PIN, and biometric policies."
+          description="OTP rules, session timeout, PIN lock, device binding, and access controls."
         />
 
         <SettingCard
-          href="/admin/agency/settings/devices"
-          title="Device Management"
-          description="Reset agent device binding and control device access."
+          href="/admin/agency/settings/fraud-rules"
+          title="Fraud Rules"
+          description="Withdrawal velocity, suspicious transaction flags, and admin approval thresholds."
         />
 
         <SettingCard

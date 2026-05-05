@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Image from "next/image";
+import SubmitButton from "../components/SubmitButton";
 
 const API_BASE =
   process.env.AGENCY_API_BASE_URL ||
@@ -318,24 +319,3 @@ function Input(props: any) {
   );
 }
 
-function SubmitButton({ text }: { text: string }) {
-  return (
-    <button
-      type="submit"
-      style={{
-        width: "100%",
-        marginTop: 24,
-        padding: 16,
-        borderRadius: 18,
-        border: "none",
-        background: "#0F3D2E",
-        color: "white",
-        fontWeight: 900,
-        fontSize: 16,
-        cursor: "pointer",
-      }}
-    >
-      {text}
-    </button>
-  );
-}

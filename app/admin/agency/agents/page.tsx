@@ -1,3 +1,4 @@
+import ActionSubmitButton from "@/app/components/ActionSubmitButton";
 import AgentActions from "@/app/components/AgentActions";
 import { adminApiGet, adminApiPost } from "@/app/lib/agencyAdminApi";
 import { revalidatePath } from "next/cache";
@@ -226,20 +227,10 @@ export default async function AgentsPage() {
                     <form action={resetAgentDevice} style={{ marginTop: 8 }}>
                       <input type="hidden" name="agent_id" value={a.id} />
 
-                      <button
-                        type="submit"
-                        style={{
-                          border: "none",
-                          borderRadius: 12,
-                          padding: "10px 14px",
-                          fontWeight: 900,
-                          cursor: "pointer",
-                          background: "#E0F2FE",
-                          color: "#075985",
-                        }}
-                      >
-                        Reset Device
-                      </button>
+                      <ActionSubmitButton
+                        text="Reset Device"
+                        loadingText="Resetting..."
+                      />
                     </form>
                   </td>
                 </tr>

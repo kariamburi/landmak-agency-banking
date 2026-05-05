@@ -163,7 +163,37 @@ const topCard = {
   padding: "18px 24px",
   minWidth: 190,
 };
+const summaryValue = {
+  margin: "8px 0 0",
+  color: "#0F172A",
+  fontSize: 18,
+  fontWeight: 900,
+  lineHeight: 1.2,
+  overflowWrap: "anywhere" as const,
+  wordBreak: "break-word" as const,
+};
 
+const tableStyle = {
+  width: "100%",
+  minWidth: 900,
+  borderCollapse: "collapse" as const,
+  fontSize: 14,
+  tableLayout: "fixed" as const,
+};
+
+const thStyle = {
+  padding: 14,
+  textAlign: "left" as const,
+  whiteSpace: "nowrap" as const,
+};
+
+const tdStyle = {
+  padding: 14,
+  whiteSpace: "normal" as const,
+  verticalAlign: "top" as const,
+  overflowWrap: "anywhere" as const,
+  wordBreak: "break-word" as const,
+};
 const summaryGrid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
@@ -186,12 +216,6 @@ const summaryLabel = {
   fontWeight: 700,
 };
 
-const summaryValue = {
-  margin: "8px 0 0",
-  color: "#0F172A",
-  fontSize: 22,
-  fontWeight: 900,
-};
 
 const tableCard = {
   marginTop: 32,
@@ -200,24 +224,6 @@ const tableCard = {
   border: "1px solid #E2E8F0",
   overflow: "hidden",
   boxShadow: "0 12px 35px rgba(15,61,46,0.08)",
-};
-
-const tableStyle = {
-  width: "100%",
-  minWidth: 1000,
-  borderCollapse: "collapse" as const,
-  fontSize: 15,
-};
-
-const thStyle = {
-  padding: 16,
-  textAlign: "left" as const,
-  whiteSpace: "nowrap" as const,
-};
-
-const tdStyle = {
-  padding: 16,
-  whiteSpace: "nowrap" as const,
 };
 
 const emptyStyle = {

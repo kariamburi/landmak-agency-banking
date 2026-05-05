@@ -7,6 +7,8 @@ export default async function AgencyAdminLayout({ children }: { children: React.
         ["Overview", "/admin/agency"],
         ["Agents", "/admin/agency/agents"],
         ["Transactions", "/admin/agency/transactions"],
+        ["Withdrawal Approvals", "/admin/agency/withdrawal-approvals"],
+        ["Fraud Alerts", "/admin/agency/fraud-alerts"],
         ["Reconciliation", "/admin/agency/reconciliation"],
         ["Settlements", "/admin/agency/settlements"],
         ["Commissions", "/admin/agency/commissions"],
@@ -55,11 +57,11 @@ export default async function AgencyAdminLayout({ children }: { children: React.
                             href={href}
                             style={{
                                 display: "block",
-                                padding: "12px 16px",
+                                padding: "7px 16px",
                                 borderRadius: 14,
                                 color: "white",
                                 textDecoration: "none",
-                                fontWeight: 800,
+                                fontWeight: 600,
                             }}
                         >
                             {label}

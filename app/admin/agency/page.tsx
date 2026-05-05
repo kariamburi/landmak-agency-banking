@@ -2,12 +2,15 @@ import Link from "next/link";
 
 export default function AgencyOverviewPage() {
   const cards = [
-    ["Agents", "/admin/agency/agents", "Register agents and manage float."],
-    ["Transactions", "/admin/agency/transactions", "View deposits, withdrawals, and repayments."],
-    ["Reconciliation", "/admin/agency/reconciliation", "Compare float, cash, and daily totals."],
+    ["Agents", "/admin/agency/agents", "Register agents, manage status, devices, and float."],
+    ["Transactions", "/admin/agency/transactions", "View deposits, withdrawals, loan repayments, and receipts."],
+    ["Withdrawal Approvals", "/admin/agency/withdrawal-approvals", "Review and approve high-value withdrawals."],
+    ["Fraud Alerts", "/admin/agency/fraud-alerts", "Review suspicious activity and resolve fraud alerts."],
+    ["Reconciliation", "/admin/agency/reconciliation", "Compare float, cash, and daily transaction totals."],
     ["Settlements", "/admin/agency/settlements", "Close daily agency settlement reports."],
-    ["Commissions", "/admin/agency/commissions", "Track and pay agent commissions."],
-    ["Audit", "/admin/agency/audit", "Track admin actions, reversals, payouts, status changes, and sensitive system activities.."],
+    ["Commissions", "/admin/agency/commissions", "Track commission earnings and payouts."],
+    ["Audit", "/admin/agency/audit", "Track admin actions, reversals, payouts, and sensitive activities."],
+    ["Settings", "/admin/agency/settings", "Configure limits, security rules, commissions, and fraud controls."],
   ];
 
   return (

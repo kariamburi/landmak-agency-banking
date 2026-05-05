@@ -1,5 +1,6 @@
 import { agencySettingsGet } from "@/app/lib/agencySettingsApi";
 import { deleteCommissionRule } from "./server-actions";
+import DeleteRuleButton from "./DeleteRuleButton";
 
 function money(v: any) {
   return Number(v || 0).toLocaleString("en-KE", {
@@ -132,21 +133,7 @@ export default async function CommissionRulesPage() {
 
                     <form action={deleteCommissionRule}>
                       <input type="hidden" name="id" value={rule.id} />
-                      <button
-                        type="submit"
-                        style={{
-                          border: "none",
-                          padding: "8px 12px",
-                          borderRadius: 10,
-                          background: "#FEE2E2",
-                          color: "#991B1B",
-                          fontWeight: 900,
-                          fontSize: 13,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </button>
+                      <DeleteRuleButton ruleId={rule.id} />
                     </form>
                   </div>
                 </td>
