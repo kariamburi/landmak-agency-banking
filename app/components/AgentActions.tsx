@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Modal from "./Modal";
 
 const inputStyle = {
@@ -34,6 +34,33 @@ function Field({ label, children }: any) {
 export default function AgentActions({ agents, createAction, topupAction }: any) {
     const [showCreate, setShowCreate] = useState(false);
     const [showTopup, setShowTopup] = useState(false);
+    const [isPending, startTransition] = useTransition();
+
+    function handleCreateSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+
+        startTransition(async () => {
+            await createAction(formData);
+            form.reset();
+            setShowCreate(false);
+        });
+    }
+
+    function handleTopupSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+
+        const form = e.currentTarget;
+        const formData = new FormData(form);
+
+        startTransition(async () => {
+            await topupAction(formData);
+            form.reset();
+            setShowTopup(false);
+        });
+    }
 
     return (
         <>
@@ -77,7 +104,7 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                 title="Create Agent"
                 subtitle="Register a new approved agency banking agent."
             >
-                <form action={createAction}>
+                <form onSubmit={handleCreateSubmit}>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                         <Field label="Agent name">
                             <input style={inputStyle} name="name" placeholder="John Agent" required />
@@ -111,6 +138,8 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                     </div>
 
                     <button
+                        type="submit"
+                        disabled={isPending}
                         style={{
                             width: "100%",
                             marginTop: 24,
@@ -121,10 +150,11 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                             color: "white",
                             fontWeight: 900,
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: isPending ? "not-allowed" : "pointer",
+                            opacity: isPending ? 0.7 : 1,
                         }}
                     >
-                        Create Agent
+                        {isPending ? "Creating..." : "Create Agent"}
                     </button>
                 </form>
             </Modal>
@@ -135,7 +165,7 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                 title="Top-up Float"
                 subtitle="Fund an agent wallet for customer withdrawals."
             >
-                <form action={topupAction}>
+                <form onSubmit={handleTopupSubmit}>
                     <div style={{ display: "grid", gap: 16 }}>
                         <Field label="Select agent">
                             <select style={inputStyle} name="agent_id" required>
@@ -154,6 +184,8 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                     </div>
 
                     <button
+                        type="submit"
+                        disabled={isPending}
                         style={{
                             width: "100%",
                             marginTop: 24,
@@ -164,10 +196,11 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                             color: "#111827",
                             fontWeight: 900,
                             fontSize: 16,
-                            cursor: "pointer",
+                            cursor: isPending ? "not-allowed" : "pointer",
+                            opacity: isPending ? 0.7 : 1,
                         }}
                     >
-                        Top-up Float
+                        {isPending ? "Processing..." : "Top-up Float"}
                     </button>
                 </form>
             </Modal>
