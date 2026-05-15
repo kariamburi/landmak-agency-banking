@@ -1,22 +1,24 @@
 import IdleLogout from "@/app/components/IdleLogout";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import Image from "next/image";
 
-export default async function AgencyAdminLayout({ children }: { children: React.ReactNode }) {
-    const links = [
-        ["Overview", "/admin/agency"],
-        ["Agents", "/admin/agency/agents"],
-        ["Transactions", "/admin/agency/transactions"],
-        ["Withdrawal Approvals", "/admin/agency/withdrawal-approvals"],
-        ["Fraud Alerts", "/admin/agency/fraud-alerts"],
-        ["Reconciliation", "/admin/agency/reconciliation"],
-        ["Settlements", "/admin/agency/settlements"],
-        ["Commissions", "/admin/agency/commissions"],
-        ["Audit Logs", "/admin/agency/audit"],
-        ["Settings", "/admin/agency/settings"],
+const menu = [
+    { title: "Home", href: "/admin", icon: "⌂" },
+    { title: "Overview", href: "/admin/agency", icon: "▣" },
+    { title: "Agents", href: "/admin/agency/agents", icon: "☷" },
+    { title: "Transact", href: "/admin/agency/transactions", icon: "⇄" },
+    { title: "Approvals", href: "/admin/agency/withdrawal-approvals", icon: "✓" },
+    { title: "Fraud", href: "/admin/agency/fraud-alerts", icon: "◇" },
+    { title: "Recon", href: "/admin/agency/reconciliation", icon: "▤" },
+    { title: "Mobile", href: "/admin/mobile", icon: "▣" },
+];
 
-    ];
-
+export default async function AgencyAdminLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     const cookieStore = await cookies();
     const rawUser = cookieStore.get("agency_admin_user")?.value;
 
@@ -27,126 +29,71 @@ export default async function AgencyAdminLayout({ children }: { children: React.
 
     const username = user?.username || "Agency Admin";
     const email = user?.email || "";
-    const role = user?.roles?.[0] || "AGENCY_ADMIN";
     const initials = String(username).slice(0, 1).toUpperCase();
 
     return (
-        <div style={{ minHeight: "100vh", background: "#F8FAFC", fontFamily: "Arial, sans-serif" }}>
+        <div className="min-h-screen bg-slate-50 font-sans">
             <IdleLogout minutes={15} />
 
-            <aside
-                style={{
-                    position: "fixed",
-                    left: 0,
-                    top: 0,
-                    width: 256,
-                    height: "100vh",
-                    background: "#0F3D2E",
-                    color: "white",
-                    padding: 24,
-                    boxSizing: "border-box",
-                }}
-            >
-                <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900 }}>Agency Admin</h1>
-                <p style={{ marginTop: 10, color: "rgba(255,255,255,.75)" }}>Landmak Finance</p>
+            <aside className="fixed left-0 top-0 z-40 hidden h-screen w-24 bg-white shadow-sm md:block">
+                <div className="flex h-24 flex-col items-center justify-center bg-[#0F3D2E] text-white">
+                    <div className="flex h-[52px] w-[52px] items-center justify-center overflow-hidden rounded-[18px] bg-white/10">
+                        <Image
+                            src="/assets/images/icon.png"
+                            alt="Landmak Logo"
+                            width={34}
+                            height={34}
+                            className="object-contain"
+                        />
+                    </div>
+                </div>
 
-                <nav style={{ marginTop: 10, display: "grid", gap: 5 }}>
-                    {links.map(([label, href]) => (
+                <nav className="mt-4 flex flex-col items-center gap-2">
+                    {menu.map((item) => (
                         <Link
-                            key={href}
-                            href={href}
-                            style={{
-                                display: "block",
-                                padding: "7px 16px",
-                                borderRadius: 14,
-                                color: "white",
-                                textDecoration: "none",
-                                fontWeight: 600,
-                            }}
+                            key={item.href}
+                            href={item.href}
+                            title={item.title}
+                            className="flex w-20 flex-col items-center justify-center rounded-xl px-1 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-[#0F3D2E]"
                         >
-                            {label}
+                            <span className="text-lg leading-none">{item.icon}</span>
+                            <span className="mt-1 text-[10px] font-bold leading-none">
+                                {item.title}
+                            </span>
                         </Link>
                     ))}
                 </nav>
-
-                <p
-                    style={{
-                        position: "absolute",
-                        left: 24,
-                        right: 24,
-                        bottom: 24,
-                        margin: 0,
-                        color: "rgba(255,255,255,.65)",
-                        fontSize: 13,
-                        textAlign: "center",
-                    }}
-                >
-                    Auto logout after 15 minutes idle
-                </p>
             </aside>
 
-            <div style={{ marginLeft: 256 }}>
-                <header
-                    style={{
-                        height: 82,
-                        background: "rgba(255,255,255,.96)",
-                        borderBottom: "1px solid #E2E8F0",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "0 32px",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 50,
-                    }}
-                >
+            <div className="md:ml-24">
+                <header className="sticky top-0 z-30 flex h-[92px] items-center justify-between bg-[#0F3D2E] px-6 text-white shadow-sm md:px-8">
                     <div>
-                        <p style={{ margin: 0, fontSize: 13, color: "#64748B", fontWeight: 800 }}>
-                            Status
+                        <p className="tracking-[0.45em] text-[#F6D56B] text-sm font-black">
+                            LANDMAK DIGITAL BANKING
                         </p>
-                        <p style={{ margin: "4px 0 0", color: "#0F172A", fontWeight: 900 }}>
-                            🟢 Logged in securely
+                        <h1 className="mt-1 text-2xl font-black leading-none">
+                            Agency Banking Admin Portal
+                        </h1>
+                        <p className="mt-2 text-sm font-semibold text-white/85">
+                            Agents • Transactions • Float • Settlements • Security
                         </p>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                        <div style={{ textAlign: "right" }}>
-                            <p style={{ margin: 0, color: "#0F172A", fontWeight: 900 }}>{username}</p>
-                            <p style={{ margin: "4px 0 0", color: "#64748B", fontSize: 13, fontWeight: 700 }}>
+                    <div className="flex items-center gap-4">
 
-                                {email ? ` ${email}` : ""}
-                            </p>
+                        <div className="hidden text-right md:block">
+                            <p className="font-black">{username}</p>
+                            <p className="text-sm font-semibold text-white/80">{email}</p>
                         </div>
 
-                        <div
-                            style={{
-                                width: 48,
-                                height: 48,
-                                borderRadius: "50%",
-                                background: "#0F3D2E",
-                                color: "white",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontWeight: 900,
-                                fontSize: 18,
-                            }}
-                        >
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#0F3D2E] text-xl font-black">
                             {initials}
                         </div>
 
                         <form action="/logout" method="GET">
                             <button
                                 type="submit"
-                                style={{
-                                    border: "none",
-                                    borderRadius: 14,
-                                    padding: "12px 16px",
-                                    background: "#FEE2E2",
-                                    color: "#991B1B",
-                                    fontWeight: 900,
-                                    cursor: "pointer",
-                                }}
+                                className="rounded-2xl bg-white px-5 py-3 font-black text-[#0F3D2E]"
                             >
                                 Logout
                             </button>
@@ -154,7 +101,7 @@ export default async function AgencyAdminLayout({ children }: { children: React.
                     </div>
                 </header>
 
-                <main style={{ padding: 32 }}>{children}</main>
+                <main className="p-4 md:p-6">{children}</main>
             </div>
         </div>
     );

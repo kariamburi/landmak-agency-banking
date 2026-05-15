@@ -1,34 +1,39 @@
+import ExportAuditLogsButton from "@/app/components/ExportAuditLogsButton";
 import { adminApiGet } from "@/app/lib/agencyAdminApi";
+import Link from "next/link";
+
+const PAGE_SIZE = 10;
 
 function formatDate(v: any) {
   if (!v) return "—";
+
   return new Date(v).toLocaleString("en-KE", {
     dateStyle: "medium",
     timeStyle: "short",
   });
 }
 
-function badge(value: any) {
-  if (!value) return <span style={{ color: "#94A3B8" }}>—</span>;
+export default async function AuditLogsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    page?: string;
+    action?: string;
+    agent?: string;
+    entity?: string;
+    from?: string;
+    to?: string;
+  }>;
+}) {
+  const params = await searchParams;
 
-  return (
-    <span
-      style={{
-        padding: "6px 12px",
-        borderRadius: 999,
-        background: "#F1F5F9",
-        color: "#334155",
-        fontWeight: 900,
-        fontSize: 13,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {value}
-    </span>
-  );
-}
+  const currentPage = Math.max(Number(params?.page || 1), 1);
+  const action = String(params?.action || "").trim().toLowerCase();
+  const agent = String(params?.agent || "").trim().toLowerCase();
+  const entity = String(params?.entity || "").trim().toLowerCase();
+  const from = String(params?.from || "").trim();
+  const to = String(params?.to || "").trim();
 
-export default async function AuditLogsPage() {
   let logs: any[] = [];
 
   try {
@@ -38,197 +43,253 @@ export default async function AuditLogsPage() {
     logs = [];
   }
 
+  const filteredLogs = logs.filter((l: any) => {
+    const logAction = String(l.action || "").toLowerCase();
+    const logAgent = String(l.agent_name || l.agent_id || "").toLowerCase();
+    const logEntity = String(l.entity_type || l.entity_id || "").toLowerCase();
+
+    const logDate = l.created_at ? new Date(l.created_at) : null;
+    const fromDate = from ? new Date(`${from}T00:00:00`) : null;
+    const toDate = to ? new Date(`${to}T23:59:59`) : null;
+
+    return (
+      (!action || logAction.includes(action)) &&
+      (!agent || logAgent.includes(agent)) &&
+      (!entity || logEntity.includes(entity)) &&
+      (!fromDate || (logDate && logDate >= fromDate)) &&
+      (!toDate || (logDate && logDate <= toDate))
+    );
+  });
+
+  const total = filteredLogs.length;
+  const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
+  const safePage = Math.min(currentPage, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const paginatedLogs = filteredLogs.slice(start, start + PAGE_SIZE);
+
+  const query = new URLSearchParams();
+
+  if (action) query.set("action", action);
+  if (agent) query.set("agent", agent);
+  if (entity) query.set("entity", entity);
+  if (from) query.set("from", from);
+  if (to) query.set("to", to);
+
+  const prevQuery = new URLSearchParams(query);
+  prevQuery.set("page", String(Math.max(safePage - 1, 1)));
+
+  const nextQuery = new URLSearchParams(query);
+  nextQuery.set("page", String(Math.min(safePage + 1, totalPages)));
+
   return (
-    <div style={{ fontFamily: "Arial, sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 20 }}>
-        <div>
-          <h1 style={{ fontSize: 42, fontWeight: 900, margin: 0, color: "#0F172A" }}>
-            Audit Logs
-          </h1>
+    <div className="space-y-5">
+      <div className="rounded-t-2xl px-6 py-5 text-white shadow">
+        <p className="text-sm font-semibold text-slate-500">Agency Banking</p>
+        <h1 className="mt-1 text-3xl text-slate-900">Audit Logs</h1>
+      </div>
 
-          <p style={{ marginTop: 8, color: "#64748B", fontSize: 18 }}>
-            Track admin actions, reversals, payouts, status changes, and sensitive system activities.
+      <form
+        action="/admin/agency/audit"
+        className="w-full overflow-hidden rounded-b-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      >
+        <div className="mb-4 border-b border-slate-300 bg-slate-100 px-4 py-2 text-sm font-black text-slate-800">
+          Search Audit Logs
+        </div>
+
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_150px_150px_150px_auto]">
+          <input
+            name="action"
+            defaultValue={params?.action || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+            placeholder="Action"
+          />
+
+          <input
+            name="agent"
+            defaultValue={params?.agent || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+            placeholder="Agent / Admin"
+          />
+
+          <input
+            name="entity"
+            defaultValue={params?.entity || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+            placeholder="Entity"
+          />
+
+          <input
+            type="date"
+            name="from"
+            defaultValue={params?.from || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+          />
+
+          <input
+            type="date"
+            name="to"
+            defaultValue={params?.to || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+          />
+
+          <div className="flex min-w-0 gap-2">
+            <button className="h-10 rounded-md bg-[#0F3D2E] px-5 text-sm font-black text-white hover:bg-[#145A43]">
+              Search
+            </button>
+
+            <Link
+              href="/admin/agency/audit"
+              className="flex h-10 items-center rounded-md border border-slate-300 px-5 text-sm font-black hover:bg-slate-50"
+            >
+              Reset
+            </Link>
+          </div>
+        </div>
+      </form>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <SummaryCard label="Total Logs" value={total} />
+        <SummaryCard label="Latest Action" value={filteredLogs[0]?.action || "—"} />
+        <SummaryCard
+          label="Last Updated"
+          value={
+            filteredLogs[0]?.created_at
+              ? formatDate(filteredLogs[0].created_at)
+              : "—"
+          }
+        />
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between border-b pb-4">
+          <ExportAuditLogsButton
+            logs={filteredLogs}
+          />
+
+          <p className="text-sm text-slate-500">
+            Total {total} • Page {safePage} of {totalPages}
           </p>
         </div>
 
-        <div style={topCard}>
-          <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>Total Logs</p>
-          <h2 style={{ margin: "8px 0 0", fontSize: 34 }}>{logs.length}</h2>
-        </div>
-      </div>
-
-      <div style={summaryGrid}>
-        <SummaryCard label="Latest Action" value={logs[0]?.action || "—"} />
-        <SummaryCard label="Last Updated" value={logs[0]?.created_at ? formatDate(logs[0].created_at) : "—"} />
-        <SummaryCard label="Tracked Records" value={logs.length} />
-      </div>
-
-      <div style={tableCard}>
-        <div style={{ padding: 24, borderBottom: "1px solid #E2E8F0" }}>
-          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>
-            Activity History
-          </h2>
-          <p style={{ margin: "6px 0 0", color: "#64748B" }}>
-            Every sensitive action should appear here for accountability.
-          </p>
-        </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table style={tableStyle}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[1050px] border-collapse text-[12px]">
             <thead>
-              <tr style={{ background: "#F8FAFC", color: "#475569" }}>
-                {["Date", "Action", "Agent", "Entity", "Status Change", "Reason"].map((h) => (
-                  <th key={h} style={thStyle}>{h}</th>
-                ))}
+              <tr className="bg-slate-100 text-slate-900">
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Date
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Action
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Agent
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Entity
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Status Change
+                </th>
+                <th className="px-2 py-2 text-left font-bold">
+                  Reason
+                </th>
               </tr>
             </thead>
 
             <tbody>
-              {logs.map((l) => (
-                <tr key={l.id} style={{ borderTop: "1px solid #E2E8F0" }}>
-                  <td style={tdStyle}>{formatDate(l.created_at)}</td>
-
-                  <td style={tdStyle}>
-                    <span
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 999,
-                        background: "#FEF3C7",
-                        color: "#92400E",
-                        fontWeight: 900,
-                        fontSize: 13,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {l.action || "—"}
-                    </span>
-                  </td>
-
-                  <td style={{ ...tdStyle, fontWeight: 900 }}>
-                    {l.agent_name || l.agent_id || "—"}
-                  </td>
-
-                  <td style={tdStyle}>
-                    <strong>{l.entity_type || "Entity"}</strong> #{l.entity_id || "—"}
-                  </td>
-
-                  <td style={tdStyle}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {badge(l.old_status)}
-                      <span style={{ color: "#94A3B8" }}>→</span>
-                      {badge(l.new_status)}
-                    </span>
-                  </td>
-
-                  <td style={{ ...tdStyle, color: "#64748B" }}>
-                    {l.reason || "—"}
-                  </td>
-                </tr>
-              ))}
-
-              {!logs.length && (
+              {paginatedLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={emptyStyle}>
-                    <div style={{ fontSize: 34 }}>🧾</div>
-                    <h3 style={{ margin: "10px 0 4px", fontSize: 20, color: "#0F172A" }}>
-                      No audit logs found
-                    </h3>
-                    <p style={{ margin: 0 }}>
-                      Admin actions, reversals, payouts, and sensitive changes will appear here.
-                    </p>
+                  <td colSpan={6} className="px-5 py-8 text-center text-slate-500">
+                    No audit logs found.
                   </td>
                 </tr>
+              ) : (
+                paginatedLogs.map((l: any) => (
+                  <tr key={l.id} className="border-b hover:bg-slate-50">
+                    <td className="whitespace-nowrap px-2 py-2 text-slate-600">
+                      {formatDate(l.created_at)}
+                    </td>
+
+                    <td className="whitespace-nowrap px-2 py-2">
+                      <span className="rounded-full bg-yellow-100 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-wide text-yellow-700">
+                        {l.action || "—"}
+                      </span>
+                    </td>
+
+                    <td className="whitespace-nowrap px-2 py-2 font-semibold">
+                      {l.agent_name || l.agent_id || "—"}
+                    </td>
+
+                    <td className="whitespace-nowrap px-2 py-2">
+                      <span className="font-semibold">
+                        {l.entity_type || "Entity"}
+                      </span>{" "}
+                      #{l.entity_id || "—"}
+                    </td>
+
+                    <td className="whitespace-nowrap px-2 py-2">
+                      <div className="flex items-center gap-2">
+                        <StatusBadge value={l.old_status} />
+                        <span className="text-slate-400">→</span>
+                        <StatusBadge value={l.new_status} />
+                      </div>
+                    </td>
+
+                    <td className="min-w-[260px] px-2 py-2 text-slate-600">
+                      {l.reason || "—"}
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
+
+        <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4 text-sm">
+          <span className="text-slate-600">Total {total}</span>
+
+          <Link
+            href={`/admin/agency/audit?${prevQuery.toString()}`}
+            className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1 ? "pointer-events-none opacity-40" : ""
+              }`}
+          >
+            Prev
+          </Link>
+
+          <span className="rounded bg-[#0F3D2E] px-3 py-1.5 font-bold text-white">
+            {safePage}
+          </span>
+
+          <Link
+            href={`/admin/agency/audit?${nextQuery.toString()}`}
+            className={`rounded border px-3 py-1.5 font-semibold ${safePage === totalPages ? "pointer-events-none opacity-40" : ""
+              }`}
+          >
+            Next
+          </Link>
+        </div>
       </div>
     </div>
+  );
+}
+
+function StatusBadge({ value }: any) {
+  if (!value) {
+    return <span className="text-slate-400">—</span>;
+  }
+
+  return (
+    <span className="rounded-full bg-slate-100 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-wide text-slate-700">
+      {value}
+    </span>
   );
 }
 
 function SummaryCard({ label, value }: any) {
   return (
-    <div style={summaryCard}>
-      <p style={summaryLabel}>{label}</p>
-      <h2 style={summaryValue}>{value}</h2>
+    <div className="rounded-2xl bg-[#0F3D2E] p-5 text-white shadow-sm">
+      <p className="text-sm font-semibold text-white/70">{label}</p>
+      <h2 className="mt-2 text-xl font-black break-words">{value}</h2>
     </div>
   );
 }
-
-const topCard = {
-  background: "#0F3D2E",
-  color: "white",
-  borderRadius: 22,
-  padding: "18px 24px",
-  minWidth: 190,
-};
-const summaryValue = {
-  margin: "8px 0 0",
-  color: "#0F172A",
-  fontSize: 18,
-  fontWeight: 900,
-  lineHeight: 1.2,
-  overflowWrap: "anywhere" as const,
-  wordBreak: "break-word" as const,
-};
-
-const tableStyle = {
-  width: "100%",
-  minWidth: 900,
-  borderCollapse: "collapse" as const,
-  fontSize: 14,
-  tableLayout: "fixed" as const,
-};
-
-const thStyle = {
-  padding: 14,
-  textAlign: "left" as const,
-  whiteSpace: "nowrap" as const,
-};
-
-const tdStyle = {
-  padding: 14,
-  whiteSpace: "normal" as const,
-  verticalAlign: "top" as const,
-  overflowWrap: "anywhere" as const,
-  wordBreak: "break-word" as const,
-};
-const summaryGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 18,
-  marginTop: 28,
-};
-
-const summaryCard = {
-  background: "white",
-  border: "1px solid #E2E8F0",
-  borderRadius: 22,
-  padding: "20px 22px",
-  boxShadow: "0 12px 30px rgba(15,61,46,0.06)",
-};
-
-const summaryLabel = {
-  margin: 0,
-  color: "#64748B",
-  fontSize: 14,
-  fontWeight: 700,
-};
-
-
-const tableCard = {
-  marginTop: 32,
-  background: "white",
-  borderRadius: 28,
-  border: "1px solid #E2E8F0",
-  overflow: "hidden",
-  boxShadow: "0 12px 35px rgba(15,61,46,0.08)",
-};
-
-const emptyStyle = {
-  padding: 44,
-  textAlign: "center" as const,
-  color: "#64748B",
-  fontSize: 16,
-};

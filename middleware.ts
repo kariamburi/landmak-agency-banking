@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const ADMIN_TOKEN_COOKIE = "agency_admin_token";
 
 export function middleware(req: NextRequest) {
-    const isAdminRoute = req.nextUrl.pathname.startsWith("/admin/agency");
+    const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
     const isLoginRoute = req.nextUrl.pathname === "/login";
 
     const authenticated = Boolean(req.cookies.get(ADMIN_TOKEN_COOKIE)?.value);
@@ -13,12 +13,12 @@ export function middleware(req: NextRequest) {
     }
 
     if (isLoginRoute && authenticated) {
-        return NextResponse.redirect(new URL("/admin/agency", req.url));
+        return NextResponse.redirect(new URL("/admin", req.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/admin/agency/:path*", "/login"],
+    matcher: ["/admin/:path*", "/login"],
 };

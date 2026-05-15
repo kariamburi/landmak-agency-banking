@@ -1,20 +1,33 @@
 "use client";
 
+import ExportFraudAlertsButton from "@/app/components/ExportFraudAlertsButton";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { resolveFraudAlertAction } from "./actions";
 
 function formatDate(v: any) {
     if (!v) return "—";
+
     return new Date(v).toLocaleString("en-KE", {
         dateStyle: "medium",
         timeStyle: "short",
     });
 }
 
-export default function FraudAlertsTable({ alerts }: any) {
+export default function FraudAlertsTable({
+    alerts,
+    exportAlerts,
+    total,
+    safePage,
+    totalPages,
+    prevHref,
+    nextHref,
+}: any) {
     const router = useRouter();
+
     const [pendingId, setPendingId] = useState<number | null>(null);
+
     const [isPending, startTransition] = useTransition();
 
     function resolve(id: number) {
@@ -25,7 +38,9 @@ export default function FraudAlertsTable({ alerts }: any) {
         startTransition(async () => {
             try {
                 const res = await resolveFraudAlertAction(id);
+
                 alert(res.message || "Fraud alert resolved");
+
                 router.refresh();
             } catch (e: any) {
                 alert(e.message || "Failed to resolve alert");
@@ -36,167 +51,180 @@ export default function FraudAlertsTable({ alerts }: any) {
     }
 
     return (
-        <div style={card}>
-            <div style={header}>
-                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
-                    Alert Queue
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "#64748b" }}>
-                    Open and resolved fraud alerts from agency transactions.
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between border-b pb-4">
+                <ExportFraudAlertsButton alerts={exportAlerts || alerts} />
+
+                <p className="text-sm text-slate-500">
+                    Total {total} • Page {safePage} of {totalPages}
                 </p>
             </div>
 
-            <div style={{ overflowX: "auto" }}>
-                <table style={table}>
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[1100px] border-collapse text-[12px]">
                     <thead>
-                        <tr style={{ background: "#f8fafc" }}>
-                            {["Date", "Severity", "Type", "Agent", "Message", "Status", "Action"].map(
-                                (h) => (
-                                    <th key={h} style={th}>
-                                        {h}
-                                    </th>
-                                )
-                            )}
+                        <tr className="bg-slate-100 text-slate-900">
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Date
+                            </th>
+
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Severity
+                            </th>
+
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Type
+                            </th>
+
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Agent
+                            </th>
+
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Message
+                            </th>
+
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Status
+                            </th>
+
+                            <th className="px-2 py-2 text-left font-bold">
+                                Action
+                            </th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {alerts.map((a: any) => {
-                            const busy = isPending && pendingId === Number(a.id);
-
-                            return (
-                                <tr key={a.id} style={{ borderTop: "1px solid #e2e8f0" }}>
-                                    <td style={td}>{formatDate(a.created_at)}</td>
-
-                                    <td style={td}>
-                                        <span style={severityBadge(a.severity)}>{a.severity}</span>
-                                    </td>
-
-                                    <td style={td}>
-                                        <strong>
-                                            {String(a.alert_type || "—").replaceAll("_", " ")}
-                                        </strong>
-                                    </td>
-
-                                    <td style={td}>
-                                        <strong>{a.agent_name || "—"}</strong>
-                                        <div style={{ color: "#64748b", fontSize: 13 }}>
-                                            {a.agent_code || (a.agent_id ? `Agent #${a.agent_id}` : "—")}
-                                        </div>
-                                    </td>
-
-                                    <td style={{ ...td, whiteSpace: "normal", minWidth: 260 }}>
-                                        {a.message || "—"}
-                                    </td>
-
-                                    <td style={td}>
-                                        <span style={statusBadge(a.status)}>{a.status}</span>
-                                    </td>
-
-                                    <td style={td}>
-                                        {a.status === "open" ? (
-                                            <button
-                                                onClick={() => resolve(Number(a.id))}
-                                                disabled={busy}
-                                                style={resolveBtn}
-                                            >
-                                                {busy ? "..." : "Resolve"}
-                                            </button>
-                                        ) : (
-                                            <span style={{ color: "#94a3b8" }}>Resolved</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-
-                        {!alerts.length && (
+                        {alerts.length === 0 ? (
                             <tr>
-                                <td colSpan={7} style={empty}>
+                                <td
+                                    colSpan={7}
+                                    className="px-5 py-8 text-center text-slate-500"
+                                >
                                     No fraud alerts found.
                                 </td>
                             </tr>
+                        ) : (
+                            alerts.map((a: any) => {
+                                const busy =
+                                    isPending && pendingId === Number(a.id);
+
+                                const severity = String(
+                                    a.severity || ""
+                                ).toLowerCase();
+
+                                const status = String(
+                                    a.status || ""
+                                ).toLowerCase();
+
+                                return (
+                                    <tr
+                                        key={a.id}
+                                        className="border-b hover:bg-slate-50"
+                                    >
+                                        <td className="whitespace-nowrap px-2 py-2 text-slate-600">
+                                            {formatDate(a.created_at)}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            <span
+                                                className={`rounded-full px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-wide ${severity === "high"
+                                                    ? "bg-red-100 text-red-700"
+                                                    : severity === "low"
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                            >
+                                                {a.severity}
+                                            </span>
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2 font-semibold capitalize">
+                                            {String(
+                                                a.alert_type || "—"
+                                            ).replaceAll("_", " ")}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            <div className="font-semibold">
+                                                {a.agent_name || "—"}
+                                            </div>
+
+                                            <div className="text-[11px] text-slate-500">
+                                                {a.agent_code ||
+                                                    (a.agent_id
+                                                        ? `Agent #${a.agent_id}`
+                                                        : "—")}
+                                            </div>
+                                        </td>
+
+                                        <td className="min-w-[260px] px-2 py-2 text-slate-700">
+                                            {a.message || "—"}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            <span
+                                                className={`rounded-full px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-wide ${status === "resolved"
+                                                    ? "bg-[#0F3D2E]/10 text-[#0F3D2E]"
+                                                    : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                            >
+                                                {a.status}
+                                            </span>
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            {status === "open" ? (
+                                                <button
+                                                    onClick={() => resolve(Number(a.id))}
+                                                    disabled={busy}
+                                                    className="rounded bg-[#0F3D2E] px-3 py-1.5 text-[12px] font-bold text-white hover:bg-[#145A43] disabled:opacity-50"
+                                                >
+                                                    {busy ? "..." : "Resolve"}
+                                                </button>
+                                            ) : (
+                                                <span className="text-slate-400">
+                                                    Resolved
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
             </div>
+
+            <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4 text-sm">
+                <span className="text-slate-600">
+                    Total {total}
+                </span>
+
+                <Link
+                    href={prevHref}
+                    className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1
+                        ? "pointer-events-none opacity-40"
+                        : ""
+                        }`}
+                >
+                    Prev
+                </Link>
+
+                <span className="rounded bg-[#0F3D2E] px-3 py-1.5 font-bold text-white">
+                    {safePage}
+                </span>
+
+                <Link
+                    href={nextHref}
+                    className={`rounded border px-3 py-1.5 font-semibold ${safePage === totalPages
+                        ? "pointer-events-none opacity-40"
+                        : ""
+                        }`}
+                >
+                    Next
+                </Link>
+            </div>
         </div>
     );
-}
-
-const card = {
-    background: "#ffffff",
-    border: "1px solid #e2e8f0",
-    borderRadius: 22,
-    overflow: "hidden",
-    boxShadow: "0 12px 35px rgba(15,23,42,0.08)",
-};
-
-const header = {
-    padding: 24,
-    borderBottom: "1px solid #e2e8f0",
-};
-
-const table = {
-    width: "100%",
-    minWidth: 1050,
-    borderCollapse: "collapse" as const,
-    fontSize: 14,
-};
-
-const th = {
-    textAlign: "left" as const,
-    padding: 14,
-    color: "#475569",
-    whiteSpace: "nowrap" as const,
-};
-
-const td = {
-    padding: 14,
-    verticalAlign: "top" as const,
-    whiteSpace: "nowrap" as const,
-};
-
-const empty = {
-    padding: 40,
-    textAlign: "center" as const,
-    color: "#64748b",
-};
-
-const resolveBtn = {
-    border: "none",
-    background: "#0f172a",
-    color: "white",
-    padding: "9px 12px",
-    borderRadius: 10,
-    fontWeight: 900,
-    cursor: "pointer",
-};
-
-function severityBadge(severity: string) {
-    const s = String(severity || "").toLowerCase();
-
-    return {
-        display: "inline-block",
-        padding: "6px 12px",
-        borderRadius: 999,
-        background: s === "high" ? "#fee2e2" : s === "low" ? "#dcfce7" : "#fef3c7",
-        color: s === "high" ? "#991b1b" : s === "low" ? "#166534" : "#92400e",
-        fontWeight: 900,
-        textTransform: "capitalize" as const,
-    };
-}
-
-function statusBadge(status: string) {
-    const s = String(status || "").toLowerCase();
-
-    return {
-        display: "inline-block",
-        padding: "6px 12px",
-        borderRadius: 999,
-        background: s === "resolved" ? "#dcfce7" : "#fef3c7",
-        color: s === "resolved" ? "#166534" : "#92400e",
-        fontWeight: 900,
-        textTransform: "capitalize" as const,
-    };
 }

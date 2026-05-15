@@ -53,47 +53,45 @@ export default function FraudRulesForm({ initialSettings }: any) {
     }
 
     return (
-        <div style={card}>
-            <div style={header}>
-                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
-                    Fraud Detection Rules
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "#CBD5E1" }}>
-                    Control withdrawal velocity, suspicious patterns, and approval thresholds.
-                </p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-5 border-b border-slate-300 bg-slate-100 px-4 py-2 text-sm font-black text-slate-800">
+                Fraud Detection Rules
             </div>
 
-            <div style={section}>
-                <SectionTitle title="Velocity Limits" />
+            <p className="mb-5 text-sm text-slate-500">
+                Control withdrawal velocity, suspicious patterns, and approval
+                thresholds for agency transactions.
+            </p>
 
-                <div style={grid}>
-                    <Input
-                        label="Max Withdrawals Per Agent Per Hour"
-                        name="maxWithdrawalsPerAgentPerHour"
-                        value={form.maxWithdrawalsPerAgentPerHour}
-                        onChange={updateField}
-                    />
+            <SectionTitle title="Velocity Limits" />
 
-                    <Input
-                        label="Max Withdrawals Per Member Per Hour"
-                        name="maxWithdrawalsPerMemberPerHour"
-                        value={form.maxWithdrawalsPerMemberPerHour}
-                        onChange={updateField}
-                    />
+            <div className="grid gap-4 md:grid-cols-3">
+                <Input
+                    label="Max Withdrawals Per Agent Per Hour"
+                    name="maxWithdrawalsPerAgentPerHour"
+                    value={form.maxWithdrawalsPerAgentPerHour}
+                    onChange={updateField}
+                />
 
-                    <Input
-                        label="Max Failed OTP Attempts Per Day"
-                        name="maxFailedOtpAttemptsPerDay"
-                        value={form.maxFailedOtpAttemptsPerDay}
-                        onChange={updateField}
-                    />
-                </div>
+                <Input
+                    label="Max Withdrawals Per Member Per Hour"
+                    name="maxWithdrawalsPerMemberPerHour"
+                    value={form.maxWithdrawalsPerMemberPerHour}
+                    onChange={updateField}
+                />
+
+                <Input
+                    label="Max Failed OTP Attempts Per Day"
+                    name="maxFailedOtpAttemptsPerDay"
+                    value={form.maxFailedOtpAttemptsPerDay}
+                    onChange={updateField}
+                />
             </div>
 
-            <div style={section}>
+            <div className="mt-6 border-t pt-5">
                 <SectionTitle title="Suspicious Pattern Flags" />
 
-                <div style={grid}>
+                <div className="grid gap-4 md:grid-cols-3">
                     <Toggle
                         label="Flag Repeated Same Amount Withdrawals"
                         value={form.flagRepeatedSameAmountWithdrawals}
@@ -120,10 +118,10 @@ export default function FraudRulesForm({ initialSettings }: any) {
                 </div>
             </div>
 
-            <div style={section}>
+            <div className="mt-6 border-t pt-5">
                 <SectionTitle title="Approval Control" />
 
-                <div style={grid}>
+                <div className="grid gap-4 md:grid-cols-3">
                     <Input
                         label="Require Admin Approval Above Amount"
                         name="requireAdminApprovalAboveAmount"
@@ -133,11 +131,27 @@ export default function FraudRulesForm({ initialSettings }: any) {
                 </div>
             </div>
 
-            <div style={{ padding: 24, borderTop: "1px solid #E2E8F0" }}>
-                {message && <div style={success}>{message}</div>}
-                {error && <div style={danger}>{error}</div>}
+            {message && (
+                <div className="mt-5 rounded-md bg-green-50 px-4 py-3 text-sm font-bold text-green-700">
+                    {message}
+                </div>
+            )}
 
-                <button onClick={saveSettings} disabled={pending} style={button(pending)}>
+            {error && (
+                <div className="mt-5 rounded-md bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+                    {error}
+                </div>
+            )}
+
+            <div className="mt-5 flex justify-end border-t pt-4">
+                <button
+                    onClick={saveSettings}
+                    disabled={pending}
+                    className={`h-10 rounded-md px-5 text-sm font-black text-white ${pending
+                        ? "cursor-not-allowed bg-slate-400"
+                        : "cursor-pointer bg-[#0F3D2E] hover:bg-[#145A43]"
+                        }`}
+                >
                     {pending ? "Saving..." : "Save Fraud Rules"}
                 </button>
             </div>
@@ -147,7 +161,7 @@ export default function FraudRulesForm({ initialSettings }: any) {
 
 function SectionTitle({ title }: any) {
     return (
-        <h3 style={{ margin: "0 0 14px", fontSize: 18, fontWeight: 900, color: "#0F172A" }}>
+        <h3 className="mb-4 text-lg font-black text-slate-900">
             {title}
         </h3>
     );
@@ -155,14 +169,16 @@ function SectionTitle({ title }: any) {
 
 function Input({ label, name, value, onChange }: any) {
     return (
-        <label style={{ display: "grid", gap: 8 }}>
-            <span style={{ fontWeight: 800, color: "#334155" }}>{label}</span>
+        <label className="grid gap-2">
+            <span className="text-sm font-black text-slate-700">
+                {label}
+            </span>
 
             <input
                 type="number"
                 value={value}
                 onChange={(e) => onChange(name, e.target.value)}
-                style={input}
+                className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
             />
         </label>
     );
@@ -170,10 +186,16 @@ function Input({ label, name, value, onChange }: any) {
 
 function Toggle({ label, value, onChange }: any) {
     return (
-        <label style={toggleBox}>
+        <label className="flex min-h-[76px] items-center justify-between gap-4 rounded-md border border-slate-300 bg-slate-50 px-4 py-3">
             <div>
-                <div style={{ fontWeight: 900, color: "#0F172A" }}>{label}</div>
-                <div style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
+                <div className="text-sm font-black text-slate-900">
+                    {label}
+                </div>
+
+                <div
+                    className={`mt-1 text-xs font-bold ${value ? "text-[#0F3D2E]" : "text-slate-500"
+                        }`}
+                >
                     {value ? "Enabled" : "Disabled"}
                 </div>
             </div>
@@ -182,81 +204,8 @@ function Toggle({ label, value, onChange }: any) {
                 type="checkbox"
                 checked={value}
                 onChange={(e) => onChange(e.target.checked)}
-                style={{ width: 22, height: 22 }}
+                className="h-5 w-5 cursor-pointer"
             />
         </label>
     );
 }
-
-const card = {
-    maxWidth: 1000,
-    background: "#FFFFFF",
-    border: "1px solid #E2E8F0",
-    borderRadius: 22,
-    boxShadow: "0 12px 35px rgba(15,23,42,0.08)",
-    overflow: "hidden",
-};
-
-const header = {
-    padding: "22px 26px",
-    background: "linear-gradient(135deg, #7F1D1D, #991B1B)",
-    color: "#FFFFFF",
-};
-
-const section = {
-    padding: 24,
-    borderTop: "1px solid #E2E8F0",
-};
-
-const grid = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: 18,
-};
-
-const input = {
-    padding: "13px 14px",
-    borderRadius: 12,
-    border: "1px solid #CBD5E1",
-    fontSize: 15,
-    outline: "none",
-};
-
-const toggleBox = {
-    border: "1px solid #CBD5E1",
-    borderRadius: 14,
-    padding: "14px 16px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 14,
-    background: "#F8FAFC",
-};
-
-const success = {
-    color: "#166534",
-    background: "#DCFCE7",
-    padding: 12,
-    borderRadius: 12,
-    fontWeight: 800,
-    marginBottom: 12,
-};
-
-const danger = {
-    color: "#991B1B",
-    background: "#FEE2E2",
-    padding: 12,
-    borderRadius: 12,
-    fontWeight: 800,
-    marginBottom: 12,
-};
-
-const button = (pending: boolean) => ({
-    padding: "13px 22px",
-    borderRadius: 12,
-    border: "none",
-    background: pending ? "#94A3B8" : "#7F1D1D",
-    color: "#FFFFFF",
-    fontWeight: 900,
-    cursor: pending ? "not-allowed" : "pointer",
-});

@@ -1,53 +1,65 @@
 import Link from "next/link";
 
+const settings = [
+  {
+    href: "/admin/agency/settings/commission-rules",
+    title: "Commission Rules",
+    description:
+      "Set agent earnings by transaction type and amount range.",
+  },
+  {
+    href: "/admin/agency/settings/agent-limits",
+    title: "Agent Limits",
+    description:
+      "Configure default single and daily transaction limits.",
+  },
+  {
+    href: "/admin/agency/settings/security",
+    title: "Security",
+    description:
+      "OTP rules, session timeout, PIN lock, device binding, and access controls.",
+  },
+  {
+    href: "/admin/agency/settings/fraud-rules",
+    title: "Fraud Rules",
+    description:
+      "Withdrawal velocity, suspicious transaction flags, and admin approval thresholds.",
+  },
+  //{
+  //  href: "/admin/agency/settings/templates",
+  //  title: "SMS & Email Templates",
+  // description:
+  //   "Configure messages sent to agents, members, and admins.",
+  //},
+];
+
 export default function AgencySettingsPage() {
   return (
-    <div>
-      <h1 style={{ margin: 0, fontSize: 34, fontWeight: 900 }}>
-        Settings
-      </h1>
+    <div className="space-y-5">
+      <div className="rounded-t-2xl px-6 py-5 text-white shadow">
+        <p className="text-sm font-semibold text-slate-500">
+          Agency Banking
+        </p>
 
-      <p style={{ marginTop: 8, color: "#64748B", fontSize: 16 }}>
-        Manage agency banking configuration, commissions, limits, security, and devices.
-      </p>
+        <h1 className="mt-1 text-3xl text-slate-900">
+          Settings
+        </h1>
 
-      <div
-        style={{
-          marginTop: 28,
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: 18,
-        }}
-      >
-        <SettingCard
-          href="/admin/agency/settings/commission-rules"
-          title="Commission Rules"
-          description="Set agent earnings by transaction type and amount range."
-        />
+        <p className="mt-2 text-sm text-slate-500">
+          Manage agency banking configuration, commissions,
+          limits, security, fraud controls, and templates.
+        </p>
+      </div>
 
-        <SettingCard
-          href="/admin/agency/settings/agent-limits"
-          title="Agent Limits"
-          description="Configure default single and daily transaction limits."
-        />
-
-        <SettingCard
-          href="/admin/agency/settings/security"
-          title="Security"
-          description="OTP rules, session timeout, PIN lock, device binding, and access controls."
-        />
-
-        <SettingCard
-          href="/admin/agency/settings/fraud-rules"
-          title="Fraud Rules"
-          description="Withdrawal velocity, suspicious transaction flags, and admin approval thresholds."
-        />
-
-        <SettingCard
-          href="/admin/agency/settings/templates"
-          title="SMS & Email Templates"
-          description="Configure messages sent to agents, members, and admins."
-        />
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {settings.map((item) => (
+          <SettingCard
+            key={item.href}
+            href={item.href}
+            title={item.title}
+            description={item.description}
+          />
+        ))}
       </div>
     </div>
   );
@@ -65,28 +77,29 @@ function SettingCard({
   return (
     <Link
       href={href}
-      style={{
-        background: "white",
-        border: "1px solid #E2E8F0",
-        borderRadius: 18,
-        padding: 24,
-        boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-        textDecoration: "none",
-        color: "inherit",
-        display: "block",
-      }}
+      className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
     >
-      <h2 style={{ margin: 0, fontSize: 20, fontWeight: 900 }}>
-        {title}
-      </h2>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-lg font-black text-slate-900">
+            {title}
+          </h2>
 
-      <p style={{ marginTop: 10, color: "#64748B", lineHeight: 1.5 }}>
-        {description}
-      </p>
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            {description}
+          </p>
+        </div>
 
-      <p style={{ marginTop: 18, color: "#0F3D2E", fontWeight: 900 }}>
-        Open →
-      </p>
+        <div className="rounded-xl bg-[#0F3D2E]/10 px-3 py-2 text-sm font-black text-[#0F3D2E] transition group-hover:bg-[#0F3D2E] group-hover:text-white">
+          →
+        </div>
+      </div>
+
+      <div className="mt-5 border-t pt-4">
+        <span className="text-sm font-black text-[#0F3D2E]">
+          Open Settings
+        </span>
+      </div>
     </Link>
   );
 }

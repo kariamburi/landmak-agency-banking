@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveAgentDefaultSettingsAction } from "./actions";
+import Link from "next/link";
 
 export default function AgentDefaultSettingsForm({ initialSettings }: any) {
     const [form, setForm] = useState({
@@ -33,25 +34,60 @@ export default function AgentDefaultSettingsForm({ initialSettings }: any) {
     }
 
     return (
-        <div style={card}>
-            <div style={header}>
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>
-                    Agent Transaction Limits
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "#cbd5e1" }}>
-                    These limits will be used when creating agents if custom limits are not provided.
-                </p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-5 border-b border-slate-300 bg-slate-100 px-4 py-2 text-sm font-black text-slate-800">
+                Agent Transaction Limits
             </div>
 
-            <div style={{ padding: 24, display: "grid", gap: 18 }}>
-                <Input label="Default Daily Deposit Limit" name="dailyDepositLimit" value={form.dailyDepositLimit} onChange={updateField} />
-                <Input label="Default Daily Withdrawal Limit" name="dailyWithdrawalLimit" value={form.dailyWithdrawalLimit} onChange={updateField} />
-                <Input label="Default Single Transaction Limit" name="singleTransactionLimit" value={form.singleTransactionLimit} onChange={updateField} />
+            <p className="mb-5 text-sm text-slate-500">
+                These limits will be used when creating agents if custom limits are not
+                provided.
+            </p>
 
-                {message && <div style={{ color: "#166534", fontWeight: 700 }}>{message}</div>}
-                {error && <div style={{ color: "#b91c1c", fontWeight: 700 }}>{error}</div>}
+            <div className="grid gap-4 md:grid-cols-3">
+                <Input
+                    label="Default Daily Deposit Limit"
+                    name="dailyDepositLimit"
+                    value={form.dailyDepositLimit}
+                    onChange={updateField}
+                />
 
-                <button onClick={saveSettings} disabled={pending} style={button(pending)}>
+                <Input
+                    label="Default Daily Withdrawal Limit"
+                    name="dailyWithdrawalLimit"
+                    value={form.dailyWithdrawalLimit}
+                    onChange={updateField}
+                />
+
+                <Input
+                    label="Default Single Transaction Limit"
+                    name="singleTransactionLimit"
+                    value={form.singleTransactionLimit}
+                    onChange={updateField}
+                />
+            </div>
+
+            {message && (
+                <div className="mt-4 rounded-md bg-green-50 px-4 py-3 text-sm font-bold text-green-700">
+                    {message}
+                </div>
+            )}
+
+            {error && (
+                <div className="mt-4 rounded-md bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+                    {error}
+                </div>
+            )}
+
+            <div className="mt-5 flex justify-end border-t pt-4">
+                <button
+                    onClick={saveSettings}
+                    disabled={pending}
+                    className={`h-10 rounded-md px-5 text-sm font-black text-white ${pending
+                        ? "cursor-not-allowed bg-slate-400"
+                        : "cursor-pointer bg-[#0F3D2E] hover:bg-[#145A43]"
+                        }`}
+                >
                     {pending ? "Saving..." : "Save Agent Limits"}
                 </button>
             </div>
@@ -61,50 +97,15 @@ export default function AgentDefaultSettingsForm({ initialSettings }: any) {
 
 function Input({ label, name, value, onChange }: any) {
     return (
-        <label style={{ display: "grid", gap: 8 }}>
-            <span style={{ fontWeight: 700, color: "#334155" }}>{label}</span>
+        <label className="grid gap-2">
+            <span className="text-sm font-black text-slate-700">{label}</span>
+
             <input
                 type="number"
                 value={value}
                 onChange={(e) => onChange(name, e.target.value)}
-                style={input}
+                className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
             />
         </label>
     );
 }
-
-const card = {
-    maxWidth: 850,
-    background: "#ffffff",
-    border: "1px solid #e2e8f0",
-    borderRadius: 18,
-    boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-    overflow: "hidden",
-};
-
-const header = {
-    padding: "20px 24px",
-    borderBottom: "1px solid #e2e8f0",
-    background: "linear-gradient(135deg, #0f172a, #1e293b)",
-    color: "#ffffff",
-};
-
-const input = {
-    padding: "13px 14px",
-    borderRadius: 12,
-    border: "1px solid #cbd5e1",
-    fontSize: 15,
-    outline: "none",
-};
-
-const button = (pending: boolean) => ({
-    marginTop: 8,
-    width: "fit-content",
-    padding: "12px 22px",
-    borderRadius: 12,
-    border: "none",
-    background: pending ? "#94a3b8" : "#0f172a",
-    color: "#ffffff",
-    fontWeight: 800,
-    cursor: pending ? "not-allowed" : "pointer",
-});

@@ -1,14 +1,12 @@
+import ExportCommissionsButton from "@/app/components/ExportCommissionsButton";
 import { adminApiGet, adminApiPost } from "@/app/lib/agencyAdminApi";
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
+
+const PAGE_SIZE = 10;
 
 function money(v: any) {
   return `KES ${Number(v || 0).toLocaleString("en-KE")}`;
-}
-
-function statusStyle(status: string) {
-  if (status === "paid") return { background: "#DCFCE7", color: "#166534" };
-  if (status === "failed") return { background: "#FEE2E2", color: "#991B1B" };
-  return { background: "#FEF3C7", color: "#92400E" };
 }
 
 async function payCommission(formData: FormData) {
@@ -22,8 +20,22 @@ async function payCommission(formData: FormData) {
   revalidatePath("/admin/agency/commissions");
 }
 
-export default async function CommissionsPage() {
-  const date = new Date().toISOString().slice(0, 10);
+export default async function CommissionsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    page?: string;
+    date?: string;
+    agent?: string;
+    status?: string;
+  }>;
+}) {
+  const params = await searchParams;
+
+  const currentPage = Math.max(Number(params?.page || 1), 1);
+  const date = params?.date || new Date().toISOString().slice(0, 10);
+  const agent = String(params?.agent || "").trim().toLowerCase();
+  const status = String(params?.status || "").trim().toLowerCase();
 
   let settlements: any[] = [];
 
@@ -34,7 +46,27 @@ export default async function CommissionsPage() {
     settlements = [];
   }
 
-  const totals = settlements.reduce(
+  const filteredSettlements = settlements.filter((s: any) => {
+    const agentName = String(s.name || "").toLowerCase();
+    const agentCode = String(s.agent_code || "").toLowerCase();
+    const settlementStatus = String(s.status || "").toLowerCase();
+
+    return (
+      (!agent || agentName.includes(agent) || agentCode.includes(agent)) &&
+      (!status || settlementStatus === status)
+    );
+  });
+
+  const total = filteredSettlements.length;
+  const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
+  const safePage = Math.min(currentPage, totalPages);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const paginatedSettlements = filteredSettlements.slice(
+    start,
+    start + PAGE_SIZE
+  );
+
+  const totals = filteredSettlements.reduce(
     (acc, s) => {
       const commission = Number(s.total_commission || 0);
 
@@ -51,121 +83,216 @@ export default async function CommissionsPage() {
     }
   );
 
-  return (
-    <div style={{ fontFamily: "Arial, sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 20 }}>
-        <div>
-          <h1 style={{ fontSize: 42, fontWeight: 900, margin: 0, color: "#0F172A" }}>
-            Commissions
-          </h1>
+  const query = new URLSearchParams();
 
-          <p style={{ marginTop: 8, color: "#64748B", fontSize: 18 }}>
-            Review and pay agent commissions.
+  if (date) query.set("date", date);
+  if (agent) query.set("agent", agent);
+  if (status) query.set("status", status);
+
+  const prevQuery = new URLSearchParams(query);
+  prevQuery.set("page", String(Math.max(safePage - 1, 1)));
+
+  const nextQuery = new URLSearchParams(query);
+  nextQuery.set("page", String(Math.min(safePage + 1, totalPages)));
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-t-2xl px-6 py-5 text-white shadow">
+        <p className="text-sm font-semibold text-slate-500">Agency Banking</p>
+        <h1 className="mt-1 text-3xl text-slate-900">Commissions</h1>
+      </div>
+
+      <form
+        action="/admin/agency/commissions"
+        className="w-full overflow-hidden rounded-b-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      >
+        <div className="mb-4 border-b border-slate-300 bg-slate-100 px-4 py-2 text-sm font-black text-slate-800">
+          Search Commissions
+        </div>
+
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[170px_minmax(0,1fr)_150px_auto]">
+          <input
+            type="date"
+            name="date"
+            defaultValue={date}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+          />
+
+          <input
+            name="agent"
+            defaultValue={params?.agent || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+            placeholder="Agent name / code"
+          />
+
+          <select
+            name="status"
+            defaultValue={params?.status || ""}
+            className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+          >
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="paid">Paid</option>
+            <option value="failed">Failed</option>
+          </select>
+
+          <div className="flex min-w-0 gap-2">
+            <button className="h-10 rounded-md bg-[#0F3D2E] px-5 text-sm font-black text-white hover:bg-[#145A43]">
+              Search
+            </button>
+
+            <Link
+              href="/admin/agency/commissions"
+              className="flex h-10 items-center rounded-md border border-slate-300 px-5 text-sm font-black hover:bg-slate-50"
+            >
+              Reset
+            </Link>
+          </div>
+        </div>
+      </form>
+
+      <div className="grid gap-4 md:grid-cols-4">
+        <SummaryCard label="Commission Records" value={total} />
+        <SummaryCard
+          label="Total Commission"
+          value={money(totals.totalCommission)}
+        />
+        <SummaryCard
+          label="Paid Commission"
+          value={money(totals.paidCommission)}
+        />
+        <SummaryCard
+          label="Pending Commission"
+          value={money(totals.pendingCommission)}
+        />
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between border-b pb-4">
+          <ExportCommissionsButton
+            settlements={filteredSettlements}
+          />
+
+          <p className="text-sm text-slate-500">
+            Total {total} • Page {safePage} of {totalPages}
           </p>
         </div>
 
-        <div style={dateCard}>
-          <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>Commission Date</p>
-          <h2 style={{ margin: "8px 0 0", fontSize: 26 }}>{date}</h2>
-        </div>
-      </div>
-
-      <div style={summaryGrid}>
-        <SummaryCard label="Commission Records" value={settlements.length} />
-        <SummaryCard label="Total Commission" value={money(totals.totalCommission)} />
-        <SummaryCard label="Paid Commission" value={money(totals.paidCommission)} />
-        <SummaryCard label="Pending Commission" value={money(totals.pendingCommission)} />
-      </div>
-
-      <div style={tableCard}>
-        <div style={{ padding: 24, borderBottom: "1px solid #E2E8F0" }}>
-          <h2 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>
-            Commission Records
-          </h2>
-        </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table style={tableStyle}>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[850px] border-collapse text-[12px]">
             <thead>
-              <tr style={{ background: "#F8FAFC", color: "#475569" }}>
-                {["Agent", "Date", "Commission", "Status", "Action"].map((h) => (
-                  <th key={h} style={thStyle}>
-                    {h}
-                  </th>
-                ))}
+              <tr className="bg-slate-100 text-slate-900">
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Agent
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Date
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-right font-bold">
+                  Commission
+                </th>
+                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                  Status
+                </th>
+                <th className="px-2 py-2 text-left font-bold">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {settlements.map((s) => {
-                const commission = Number(s.total_commission || 0);
-                const disabled = s.status === "paid" || commission <= 0;
-
-                return (
-                  <tr key={s.id} style={{ borderTop: "1px solid #E2E8F0" }}>
-                    <td style={{ ...tdStyle, fontWeight: 900 }}>
-                      {s.name || "-"}{" "}
-                      <span style={{ color: "#64748B", fontWeight: 700 }}>
-                        ({s.agent_code || "-"})
-                      </span>
-                    </td>
-
-                    <td style={tdStyle}>{s.settlement_date || "-"}</td>
-
-                    <td style={{ ...tdStyle, fontWeight: 900 }}>
-                      {money(commission)}
-                    </td>
-
-                    <td style={tdStyle}>
-                      <span
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: 999,
-                          fontWeight: 900,
-                          fontSize: 13,
-                          whiteSpace: "nowrap",
-                          ...statusStyle(s.status),
-                        }}
-                      >
-                        {s.status || "-"}
-                      </span>
-                    </td>
-
-                    <td style={tdStyle}>
-                      <form action={payCommission}>
-                        <input type="hidden" name="agentId" value={s.agent_id} />
-                        <input type="hidden" name="date" value={s.settlement_date} />
-
-                        <button
-                          type="submit"
-                          disabled={disabled}
-                          style={{
-                            border: "none",
-                            borderRadius: 14,
-                            padding: "11px 18px",
-                            fontWeight: 900,
-                            cursor: disabled ? "not-allowed" : "pointer",
-                            background: disabled ? "#E2E8F0" : "#0F3D2E",
-                            color: disabled ? "#64748B" : "white",
-                          }}
-                        >
-                          {s.status === "paid" ? "Paid" : "Pay"}
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {!settlements.length && (
+              {paginatedSettlements.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={emptyStyle}>
+                  <td colSpan={5} className="px-5 py-8 text-center text-slate-500">
                     No commission records found. Run settlement first.
                   </td>
                 </tr>
+              ) : (
+                paginatedSettlements.map((s: any) => {
+                  const commission = Number(s.total_commission || 0);
+                  const disabled = s.status === "paid" || commission <= 0;
+                  const settlementStatus = String(s.status || "").toLowerCase();
+
+                  return (
+                    <tr key={s.id} className="border-b hover:bg-slate-50">
+                      <td className="whitespace-nowrap px-2 py-2">
+                        <div className="font-semibold">{s.name || "-"}</div>
+                        <div className="text-[11px] text-slate-500">
+                          {s.agent_code || "-"}
+                        </div>
+                      </td>
+
+                      <td className="whitespace-nowrap px-2 py-2 text-slate-600">
+                        {s.settlement_date || "-"}
+                      </td>
+
+                      <td className="whitespace-nowrap px-2 py-2 text-right font-semibold">
+                        {money(commission)}
+                      </td>
+
+                      <td className="whitespace-nowrap px-2 py-2">
+                        <span
+                          className={`rounded-full px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-wide ${settlementStatus === "paid"
+                            ? "bg-[#0F3D2E]/10 text-[#0F3D2E]"
+                            : settlementStatus === "failed"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                            }`}
+                        >
+                          {s.status || "-"}
+                        </span>
+                      </td>
+
+                      <td className="whitespace-nowrap px-2 py-2">
+                        <form action={payCommission}>
+                          <input type="hidden" name="agentId" value={s.agent_id} />
+                          <input
+                            type="hidden"
+                            name="date"
+                            value={s.settlement_date}
+                          />
+
+                          <button
+                            type="submit"
+                            disabled={disabled}
+                            className={`rounded px-3 py-1.5 text-[12px] font-bold ${disabled
+                              ? "cursor-not-allowed bg-slate-200 text-slate-500"
+                              : "cursor-pointer bg-[#0F3D2E] text-white hover:bg-[#145A43]"
+                              }`}
+                          >
+                            {s.status === "paid" ? "Paid" : "Pay"}
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4 text-sm">
+          <span className="text-slate-600">Total {total}</span>
+
+          <Link
+            href={`/admin/agency/commissions?${prevQuery.toString()}`}
+            className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1 ? "pointer-events-none opacity-40" : ""
+              }`}
+          >
+            Prev
+          </Link>
+
+          <span className="rounded bg-[#0F3D2E] px-3 py-1.5 font-bold text-white">
+            {safePage}
+          </span>
+
+          <Link
+            href={`/admin/agency/commissions?${nextQuery.toString()}`}
+            className={`rounded border px-3 py-1.5 font-semibold ${safePage === totalPages ? "pointer-events-none opacity-40" : ""
+              }`}
+          >
+            Next
+          </Link>
         </div>
       </div>
     </div>
@@ -174,80 +301,9 @@ export default async function CommissionsPage() {
 
 function SummaryCard({ label, value }: any) {
   return (
-    <div style={summaryCard}>
-      <p style={summaryLabel}>{label}</p>
-      <h2 style={summaryValue}>{value}</h2>
+    <div className="rounded-2xl bg-[#0F3D2E] p-5 text-white shadow-sm">
+      <p className="text-sm font-semibold text-white/70">{label}</p>
+      <h2 className="mt-2 text-xl font-black">{value}</h2>
     </div>
   );
 }
-
-const dateCard = {
-  background: "#0F3D2E",
-  color: "white",
-  borderRadius: 22,
-  padding: "18px 24px",
-  minWidth: 230,
-};
-
-const summaryGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-  gap: 18,
-  marginTop: 28,
-};
-
-const summaryCard = {
-  background: "white",
-  border: "1px solid #E2E8F0",
-  borderRadius: 22,
-  padding: "20px 22px",
-  boxShadow: "0 12px 30px rgba(15,61,46,0.06)",
-};
-
-const summaryLabel = {
-  margin: 0,
-  color: "#64748B",
-  fontSize: 14,
-  fontWeight: 700,
-};
-
-const summaryValue = {
-  margin: "8px 0 0",
-  color: "#0F172A",
-  fontSize: 22,
-  fontWeight: 900,
-};
-
-const tableCard = {
-  marginTop: 32,
-  background: "white",
-  borderRadius: 28,
-  border: "1px solid #E2E8F0",
-  overflow: "hidden",
-  boxShadow: "0 12px 35px rgba(15,61,46,0.08)",
-};
-
-const tableStyle = {
-  width: "100%",
-  minWidth: 850,
-  borderCollapse: "collapse" as const,
-  fontSize: 15,
-};
-
-const thStyle = {
-  padding: 16,
-  textAlign: "left" as const,
-  whiteSpace: "nowrap" as const,
-};
-
-const tdStyle = {
-  padding: 16,
-  whiteSpace: "nowrap" as const,
-};
-
-const emptyStyle = {
-  padding: 40,
-  textAlign: "center" as const,
-  color: "#64748B",
-  fontSize: 16,
-};

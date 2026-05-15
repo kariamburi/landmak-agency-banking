@@ -1,11 +1,14 @@
 "use client";
 
+
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
     approveWithdrawalAction,
     rejectWithdrawalAction,
 } from "./actions";
+import ExportWithdrawalApprovalsButton from "@/app/components/ExportWithdrawalApprovalsButton";
 
 function money(v: any) {
     return `KES ${Number(v || 0).toLocaleString("en-KE", {
@@ -16,13 +19,22 @@ function money(v: any) {
 
 function date(v: any) {
     if (!v) return "—";
+
     return new Date(v).toLocaleString("en-KE", {
         dateStyle: "medium",
         timeStyle: "short",
     });
 }
 
-export default function WithdrawalApprovalsTable({ approvals }: any) {
+export default function WithdrawalApprovalsTable({
+    approvals,
+    exportApprovals,
+    total,
+    safePage,
+    totalPages,
+    prevHref,
+    nextHref,
+}: any) {
     const router = useRouter();
     const [pendingId, setPendingId] = useState<number | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -65,173 +77,154 @@ export default function WithdrawalApprovalsTable({ approvals }: any) {
     }
 
     return (
-        <div style={card}>
-            <div style={header}>
-                <h2 style={{ margin: 0, fontSize: 22, fontWeight: 900 }}>
-                    Approval Queue
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "#64748b" }}>
-                    Pending and processed high-value withdrawal requests.
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-4 flex items-center justify-between border-b pb-4">
+                <ExportWithdrawalApprovalsButton approvals={exportApprovals || approvals} />
+
+                <p className="text-sm text-slate-500">
+                    Total {total} • Page {safePage} of {totalPages}
                 </p>
             </div>
 
-            <div style={{ overflowX: "auto" }}>
-                <table style={table}>
+            <div className="overflow-x-auto">
+                <table className="w-full min-w-[1050px] border-collapse text-[12px]">
                     <thead>
-                        <tr style={{ background: "#f8fafc" }}>
-                            {[
-                                "Date",
-                                "Agent",
-                                "Client",
-                                "Savings",
-                                "Phone",
-                                "Amount",
-                                "Status",
-                                "Actions",
-                            ].map((h) => (
-                                <th key={h} style={th}>
-                                    {h}
-                                </th>
-                            ))}
+                        <tr className="bg-slate-100 text-slate-900">
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Date
+                            </th>
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Agent
+                            </th>
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Client
+                            </th>
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Savings
+                            </th>
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Phone
+                            </th>
+                            <th className="border-r border-slate-200 px-2 py-2 text-right font-bold">
+                                Amount
+                            </th>
+                            <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                Status
+                            </th>
+                            <th className="px-2 py-2 text-left font-bold">
+                                Operation
+                            </th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {approvals.map((a: any) => {
-                            const busy = isPending && pendingId === Number(a.id);
-
-                            return (
-                                <tr key={a.id} style={{ borderTop: "1px solid #e2e8f0" }}>
-                                    <td style={td}>{date(a.created_at)}</td>
-                                    <td style={td}>
-                                        <strong>{a.agent_name || "—"}</strong>
-                                        <div style={{ color: "#64748b", fontSize: 13 }}>
-                                            {a.agent_code || `Agent #${a.agent_id}`}
-                                        </div>
-                                    </td>
-                                    <td style={td}>#{a.client_id}</td>
-                                    <td style={td}>#{a.savings_id}</td>
-                                    <td style={td}>{a.phone || "—"}</td>
-                                    <td style={{ ...td, fontWeight: 900 }}>{money(a.amount)}</td>
-                                    <td style={td}>
-                                        <span style={statusBadge(a.status)}>{a.status}</span>
-                                    </td>
-                                    <td style={td}>
-                                        {a.status === "pending" ? (
-                                            <div style={{ display: "flex", gap: 8 }}>
-                                                <button
-                                                    onClick={() => approve(Number(a.id))}
-                                                    disabled={busy}
-                                                    style={approveBtn}
-                                                >
-                                                    {busy ? "..." : "Approve"}
-                                                </button>
-
-                                                <button
-                                                    onClick={() => reject(Number(a.id))}
-                                                    disabled={busy}
-                                                    style={rejectBtn}
-                                                >
-                                                    Reject
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <span style={{ color: "#94a3b8" }}>Processed</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-
-                        {!approvals.length && (
+                        {approvals.length === 0 ? (
                             <tr>
-                                <td colSpan={8} style={empty}>
+                                <td colSpan={8} className="px-5 py-8 text-center text-slate-500">
                                     No withdrawal approvals found.
                                 </td>
                             </tr>
+                        ) : (
+                            approvals.map((a: any) => {
+                                const busy = isPending && pendingId === Number(a.id);
+                                const status = String(a.status || "").toLowerCase();
+
+                                return (
+                                    <tr key={a.id} className="border-b hover:bg-slate-50">
+                                        <td className="whitespace-nowrap px-2 py-2 text-slate-600">
+                                            {date(a.created_at)}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            <div className="font-semibold">{a.agent_name || "—"}</div>
+                                            <div className="text-[11px] text-slate-500">
+                                                {a.agent_code || `Agent #${a.agent_id}`}
+                                            </div>
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            #{a.client_id}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            #{a.savings_id}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            {a.phone || "—"}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2 text-right font-semibold">
+                                            {money(a.amount)}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            <span
+                                                className={`rounded-full px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-wide ${status === "approved"
+                                                    ? "bg-[#0F3D2E]/10 text-[#0F3D2E]"
+                                                    : status === "rejected"
+                                                        ? "bg-red-100 text-red-700"
+                                                        : "bg-yellow-100 text-yellow-700"
+                                                    }`}
+                                            >
+                                                {a.status || "pending"}
+                                            </span>
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2">
+                                            {status === "pending" ? (
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => approve(Number(a.id))}
+                                                        disabled={busy}
+                                                        className="rounded bg-[#0F3D2E] px-3 py-1.5 text-[12px] font-bold text-white hover:bg-[#145A43] disabled:opacity-50"
+                                                    >
+                                                        {busy ? "..." : "Approve"}
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => reject(Number(a.id))}
+                                                        disabled={busy}
+                                                        className="rounded bg-red-100 px-3 py-1.5 text-[12px] font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span className="text-slate-400">Processed</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
             </div>
+
+            <div className="mt-4 flex items-center justify-end gap-3 border-t pt-4 text-sm">
+                <span className="text-slate-600">Total {total}</span>
+
+                <Link
+                    href={prevHref}
+                    className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1 ? "pointer-events-none opacity-40" : ""
+                        }`}
+                >
+                    Prev
+                </Link>
+
+                <span className="rounded bg-[#0F3D2E] px-3 py-1.5 font-bold text-white">
+                    {safePage}
+                </span>
+
+                <Link
+                    href={nextHref}
+                    className={`rounded border px-3 py-1.5 font-semibold ${safePage === totalPages ? "pointer-events-none opacity-40" : ""
+                        }`}
+                >
+                    Next
+                </Link>
+            </div>
         </div>
     );
-}
-
-const card = {
-    background: "#ffffff",
-    border: "1px solid #e2e8f0",
-    borderRadius: 22,
-    overflow: "hidden",
-    boxShadow: "0 12px 35px rgba(15,23,42,0.08)",
-};
-
-const header = {
-    padding: 24,
-    borderBottom: "1px solid #e2e8f0",
-};
-
-const table = {
-    width: "100%",
-    minWidth: 1050,
-    borderCollapse: "collapse" as const,
-    fontSize: 14,
-};
-
-const th = {
-    textAlign: "left" as const,
-    padding: 14,
-    color: "#475569",
-    whiteSpace: "nowrap" as const,
-};
-
-const td = {
-    padding: 14,
-    verticalAlign: "top" as const,
-    whiteSpace: "nowrap" as const,
-};
-
-const empty = {
-    padding: 40,
-    textAlign: "center" as const,
-    color: "#64748b",
-};
-
-const approveBtn = {
-    border: "none",
-    background: "#166534",
-    color: "white",
-    padding: "9px 12px",
-    borderRadius: 10,
-    fontWeight: 900,
-    cursor: "pointer",
-};
-
-const rejectBtn = {
-    border: "none",
-    background: "#991b1b",
-    color: "white",
-    padding: "9px 12px",
-    borderRadius: 10,
-    fontWeight: 900,
-    cursor: "pointer",
-};
-
-function statusBadge(status: string) {
-    const s = String(status || "").toLowerCase();
-
-    const bg =
-        s === "approved" ? "#dcfce7" : s === "rejected" ? "#fee2e2" : "#fef3c7";
-
-    const color =
-        s === "approved" ? "#166534" : s === "rejected" ? "#991b1b" : "#92400e";
-
-    return {
-        display: "inline-block",
-        padding: "6px 12px",
-        borderRadius: 999,
-        background: bg,
-        color,
-        fontWeight: 900,
-        textTransform: "capitalize" as const,
-    };
 }
