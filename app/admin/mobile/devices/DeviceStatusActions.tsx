@@ -162,7 +162,7 @@ export default function DeviceStatusActions({
 
             {open && modalData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
+                    <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white p-4 shadow-2xl">
                         <div className="flex items-start gap-3">
                             <div
                                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl ${modalData.iconBg}`}
@@ -175,12 +175,12 @@ export default function DeviceStatusActions({
                                     {modalData.title}
                                 </h2>
 
-                                <p className="mt-2 break-words text-sm leading-6 text-slate-600">
+                                <p className="mt-2 text-slate-600">
                                     {modalData.description}
                                 </p>
 
                                 <p
-                                    className={`mt-2 break-words text-sm font-semibold leading-6 ${modalData.warningColor}`}
+                                    className={`mt-2 font-semibold leading-6 ${modalData.warningColor}`}
                                 >
                                     {modalData.warning}
                                 </p>

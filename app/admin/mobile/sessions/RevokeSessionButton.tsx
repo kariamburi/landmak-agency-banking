@@ -63,17 +63,17 @@ export default function RevokeSessionButton({
                                 ⚠️
                             </div>
 
-                            <div className="flex min-w-0 flex-1 flex-col">
+                            <div className="flex min-w-0 flex-1 flex-col mr-2">
                                 <h2 className="break-words text-lg font-black leading-snug text-slate-900">
                                     Revoke Member Session
                                 </h2>
 
-                                <p className="mt-2 break-words text-sm leading-6 text-slate-600">
+                                <p className="mt-2 break-words leading-6 text-slate-600">
                                     This mobile session will be immediately logged out
                                     from the Member Mobile App.
                                 </p>
 
-                                <p className="mt-2 break-words text-sm font-semibold leading-6 text-red-600">
+                                <p className="mt-2 break-words font-semibold leading-6 text-red-600">
                                     The member will need to login again.
                                 </p>
                             </div>

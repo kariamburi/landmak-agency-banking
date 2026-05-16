@@ -41,7 +41,28 @@ export default async function MobileAdminTopbar() {
                     </div>
 
                     <form action="/logout" method="GET">
-                        <button className="rounded-xl bg-white px-4 py-2 font-black text-[#0F3D2E] hover:bg-[#F8FAFC]">
+                        <button
+                            type="submit"
+                            className="flex cursor-pointer items-center gap-2 rounded-2xl bg-white px-5 py-3 font-black text-[#0F3D2E] transition hover:opacity-90"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                                className="h-5 w-5"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M7.5 3.75A2.25 2.25 0 0 0 5.25 6v12a2.25 2.25 0 0 0 2.25 2.25h6A2.25 2.25 0 0 0 15.75 18v-1.5a.75.75 0 0 0-1.5 0V18a.75.75 0 0 1-.75.75h-6a.75.75 0 0 1-.75-.75V6a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 0 1.5 0V6a2.25 2.25 0 0 0-2.25-2.25h-6Z"
+                                    clipRule="evenodd"
+                                />
+                                <path
+                                    fillRule="evenodd"
+                                    d="M16.72 8.47a.75.75 0 0 0 0 1.06l1.97 1.97H9a.75.75 0 0 0 0 1.5h9.69l-1.97 1.97a.75.75 0 1 0 1.06 1.06l3.25-3.25a.75.75 0 0 0 0-1.06l-3.25-3.25a.75.75 0 0 0-1.06 0Z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+
                             Logout
                         </button>
                     </form>
