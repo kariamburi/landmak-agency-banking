@@ -7,10 +7,7 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
     const [form, setForm] = useState({
         agentOtpExpiryMinutes: initialSettings?.agentOtpExpiryMinutes ?? 5,
         agentOtpMaxAttempts: initialSettings?.agentOtpMaxAttempts ?? 3,
-        adminOtpExpiryMinutes: initialSettings?.adminOtpExpiryMinutes ?? 5,
-        adminOtpMaxAttempts: initialSettings?.adminOtpMaxAttempts ?? 3,
 
-        adminSessionTimeoutMinutes: initialSettings?.adminSessionTimeoutMinutes ?? 15,
         agentSessionTimeoutDays: initialSettings?.agentSessionTimeoutDays ?? 30,
 
         pinMaxAttempts: initialSettings?.pinMaxAttempts ?? 5,
@@ -42,9 +39,9 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
         startTransition(async () => {
             try {
                 const res = await saveSecuritySettingsAction(form);
-                setMessage(res.message || "Security settings saved successfully");
+                setMessage(res.message || "Agency security settings saved successfully");
             } catch (e: any) {
-                setError(e.message || "Failed to save security settings");
+                setError(e.message || "Failed to save agency security settings");
             }
         });
     }
@@ -52,14 +49,14 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
     return (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-5 border-b border-slate-300 bg-slate-100 px-4 py-2 text-sm font-black text-slate-800">
-                Security Controls
+                Agency Security Controls
             </div>
 
             <p className="mb-5 text-sm text-slate-500">
-                Configure OTP, sessions, PIN lock, device binding, and access limits.
+                Configure agent OTP, agent session timeout, PIN lock, device binding, and withdrawal limits.
             </p>
 
-            <SectionTitle title="OTP Settings" />
+            <SectionTitle title="Agent OTP Settings" />
 
             <div className="grid gap-4 md:grid-cols-4">
                 <Input
@@ -77,31 +74,24 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
                 />
 
                 <Input
-                    label="Admin OTP Expiry Minutes"
-                    name="adminOtpExpiryMinutes"
-                    value={form.adminOtpExpiryMinutes}
+                    label="OTP Resend Cooldown Seconds"
+                    name="otpResendCooldownSeconds"
+                    value={form.otpResendCooldownSeconds}
                     onChange={updateField}
                 />
 
                 <Input
-                    label="Admin OTP Max Attempts"
-                    name="adminOtpMaxAttempts"
-                    value={form.adminOtpMaxAttempts}
+                    label="Max OTP Requests Per Phone Per 5 Min"
+                    name="maxOtpRequestsPerPhonePer5Min"
+                    value={form.maxOtpRequestsPerPhonePer5Min}
                     onChange={updateField}
                 />
             </div>
 
             <div className="mt-6 border-t pt-5">
-                <SectionTitle title="Session & PIN Rules" />
+                <SectionTitle title="Agent Session & PIN Rules" />
 
                 <div className="grid gap-4 md:grid-cols-4">
-                    <Input
-                        label="Admin Session Timeout Minutes"
-                        name="adminSessionTimeoutMinutes"
-                        value={form.adminSessionTimeoutMinutes}
-                        onChange={updateField}
-                    />
-
                     <Input
                         label="Agent Session Timeout Days"
                         name="agentSessionTimeoutDays"
@@ -140,20 +130,6 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
                         value={form.requireOtpForWithdrawals}
                         onChange={(v: boolean) => updateField("requireOtpForWithdrawals", v)}
                     />
-
-                    <Input
-                        label="OTP Resend Cooldown Seconds"
-                        name="otpResendCooldownSeconds"
-                        value={form.otpResendCooldownSeconds}
-                        onChange={updateField}
-                    />
-
-                    <Input
-                        label="Max OTP Requests Per Phone Per 5 Min"
-                        name="maxOtpRequestsPerPhonePer5Min"
-                        value={form.maxOtpRequestsPerPhonePer5Min}
-                        onChange={updateField}
-                    />
                 </div>
             </div>
 
@@ -178,7 +154,7 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
                         : "cursor-pointer bg-[#0F3D2E] hover:bg-[#145A43]"
                         }`}
                 >
-                    {pending ? "Saving..." : "Save Security Settings"}
+                    {pending ? "Saving..." : "Save Agency Security Settings"}
                 </button>
             </div>
         </div>
@@ -186,19 +162,13 @@ export default function SecuritySettingsForm({ initialSettings }: any) {
 }
 
 function SectionTitle({ title }: any) {
-    return (
-        <h3 className="mb-4 text-lg font-black text-slate-900">
-            {title}
-        </h3>
-    );
+    return <h3 className="mb-4 text-lg font-black text-slate-900">{title}</h3>;
 }
 
 function Input({ label, name, value, onChange }: any) {
     return (
         <label className="grid gap-2">
-            <span className="text-sm font-black text-slate-700">
-                {label}
-            </span>
+            <span className="text-sm font-black text-slate-700">{label}</span>
 
             <input
                 type="number"
@@ -214,9 +184,7 @@ function Toggle({ label, value, onChange }: any) {
     return (
         <label className="flex min-h-[76px] items-center justify-between gap-4 rounded-md border border-slate-300 bg-slate-50 px-4 py-3">
             <div>
-                <div className="text-sm font-black text-slate-900">
-                    {label}
-                </div>
+                <div className="text-sm font-black text-slate-900">{label}</div>
 
                 <div
                     className={`mt-1 text-xs font-bold ${value ? "text-[#0F3D2E]" : "text-slate-500"

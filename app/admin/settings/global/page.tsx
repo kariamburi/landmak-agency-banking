@@ -1,66 +1,66 @@
 import { adminApiGet } from "@/app/lib/agencyAdminApi";
-import SecuritySettingsForm from "./SecuritySettingsForm";
 import Link from "next/link";
+import GlobalSettingsForm from "./GlobalSettingsForm";
 
-export default async function SecuritySettingsPage() {
-    const res = await adminApiGet("/api/admin/agency/settings/security");
+export default async function GlobalSettingsPage() {
+    const res = await adminApiGet("/api/admin/settings/global");
     const settings = res.settings || {};
 
     return (
         <div className="space-y-5">
-            <div className="rounded-t-2xl px-6 py-5 text-white shadow">
+            <div className="rounded-t-2xl px-6 py-5 shadow">
                 <p className="text-sm font-semibold text-slate-500">
-                    Agency Settings
+                    Global Admin Settings
                 </p>
 
                 <h1 className="mt-1 text-3xl text-slate-900">
-                    Agency Security Settings
+                    Shared Dashboard Settings
                 </h1>
 
                 <p className="mt-2 text-sm text-slate-500">
-                    Manage agent OTP, agent session, PIN, device binding, and withdrawal protection rules.
+                    Manage admin login OTP, dashboard logout timeout, maintenance mode, and global SMS controls.
                 </p>
             </div>
 
             <div className="flex items-center justify-between gap-3 rounded-b-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <Link
-                    href="/admin/agency/settings"
+                    href="/admin"
                     className="flex h-10 items-center rounded-md border border-slate-300 px-5 text-sm font-black hover:bg-slate-50"
                 >
                     ← Go Back
                 </Link>
 
                 <Link
-                    href="/admin/settings/global"
+                    href="/admin/agency/security"
                     className="flex h-10 items-center rounded-md bg-[#0F3D2E] px-5 text-sm font-black text-white hover:bg-[#145A43]"
                 >
-                    Global Admin Settings
+                    Agency Security
                 </Link>
             </div>
 
             <div className="grid gap-4 md:grid-cols-4">
                 <SummaryCard
-                    label="Agent OTP Expiry"
-                    value={`${settings.agentOtpExpiryMinutes ?? 5} min`}
+                    label="Admin OTP Expiry"
+                    value={`${settings.globalAdminOtpExpiryMinutes ?? 5} min`}
                 />
 
                 <SummaryCard
-                    label="Agent Session Timeout"
-                    value={`${settings.agentSessionTimeoutDays ?? 30} days`}
+                    label="Admin Session Timeout"
+                    value={`${settings.globalAdminSessionTimeoutMinutes ?? 15} min`}
                 />
 
                 <SummaryCard
-                    label="PIN Lock"
-                    value={`${settings.pinLockMinutes ?? 15} min`}
+                    label="SMS"
+                    value={(settings.globalSmsEnabled ?? true) ? "Enabled" : "Disabled"}
                 />
 
                 <SummaryCard
-                    label="Device Binding"
-                    value={(settings.deviceBindingRequired ?? true) ? "Enabled" : "Disabled"}
+                    label="Maintenance"
+                    value={(settings.globalMaintenanceMode ?? false) ? "Enabled" : "Disabled"}
                 />
             </div>
 
-            <SecuritySettingsForm initialSettings={settings} />
+            <GlobalSettingsForm initialSettings={settings} />
         </div>
     );
 }

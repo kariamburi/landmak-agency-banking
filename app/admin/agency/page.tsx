@@ -9,7 +9,7 @@ export default function AgencyOverviewPage() {
     ["Reconciliation", "/admin/agency/reconciliation", "Compare float, cash, and daily transaction totals."],
     ["Settlements", "/admin/agency/settlements", "Close daily agency settlement reports."],
     ["Commissions", "/admin/agency/commissions", "Track commission earnings and payouts."],
-    ["Audit Logs", "/admin/agency/audit", "Track admin actions, reversals, payouts, and sensitive activities."],
+    // ["Audit Logs", "/admin/agency/audit", "Track admin actions, reversals, payouts, and sensitive activities."],
     ["Settings", "/admin/agency/settings", "Configure limits, security rules, commissions, and fraud controls."],
   ];
 
@@ -21,7 +21,7 @@ export default function AgencyOverviewPage() {
       <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-center justify-between border-b border-slate-500 pb-3">
           <h2 className="text-xl font-black text-slate-900">
-            Agency Modules
+            Agency Channel
           </h2>
           <span className="text-sm font-bold text-slate-500">
             Total {cards.length}

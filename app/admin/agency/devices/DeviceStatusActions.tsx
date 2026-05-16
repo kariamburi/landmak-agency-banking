@@ -3,22 +3,25 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
-    updateMobileDeviceStatusAction,
-    revokeClientMobileSessionsAction,
-    activateClientMobileDevicesAction,
+    updateAgentDeviceStatusAction,
+    revokeAgentSessionsAction,
+    activateAgentDevicesAction,
 } from "./actions";
+
 export default function DeviceStatusActions({
     deviceId,
-    clientId,
+    agentId,
     status,
 }: {
     deviceId: number;
-    clientId?: number;
+    agentId?: number;
     status: string;
 }) {
     const router = useRouter();
     const [pending, startTransition] = useTransition();
     const [busyStatus, setBusyStatus] = useState("");
+
+    const current = String(status || "active").toLowerCase();
 
     function updateStatus(nextStatus: "active" | "blocked" | "revoked") {
         const label =
@@ -28,70 +31,71 @@ export default function DeviceStatusActions({
                     ? "block"
                     : "revoke";
 
-        if (!confirm(`Are you sure you want to ${label} this device?`)) return;
+        if (!confirm(`Are you sure you want to ${label} this agent device?`)) return;
 
         setBusyStatus(nextStatus);
 
         startTransition(async () => {
             try {
-                const res = await updateMobileDeviceStatusAction(deviceId, nextStatus);
-                alert(res.message || "Device updated successfully");
+                const res = await updateAgentDeviceStatusAction(deviceId, nextStatus);
+                alert(res.message || "Agent device updated successfully");
                 router.refresh();
             } catch (e: any) {
-                alert(e.message || "Failed to update device");
+                alert(e.message || "Failed to update agent device");
             } finally {
                 setBusyStatus("");
             }
         });
     }
-    function logoutAllDevices() {
-        if (!clientId) {
-            alert("Missing client id");
+
+    function revokeSessions() {
+        if (!agentId) {
+            alert("Missing agent id");
             return;
         }
 
-        if (!confirm("Logout this member from all devices?")) return;
+        if (!confirm("Logout this agent from all active sessions?")) return;
 
-        setBusyStatus("logout_all");
+        setBusyStatus("revoke_sessions");
 
         startTransition(async () => {
             try {
-                const res = await revokeClientMobileSessionsAction(clientId);
-                alert(res.message || "All devices logged out");
+                const res = await revokeAgentSessionsAction(agentId);
+                alert(res.message || "Agent sessions revoked");
                 router.refresh();
             } catch (e: any) {
-                alert(e.message || "Failed to logout all devices");
+                alert(e.message || "Failed to revoke agent sessions");
             } finally {
                 setBusyStatus("");
             }
         });
     }
+
     function activateAllDevices() {
-        if (!clientId) {
-            alert("Missing client id");
+        if (!agentId) {
+            alert("Missing agent id");
             return;
         }
 
-        if (!confirm("Activate all devices for this member?")) return;
+        if (!confirm("Activate all devices for this agent?")) return;
 
         setBusyStatus("activate_all");
 
         startTransition(async () => {
             try {
-                const res = await activateClientMobileDevicesAction(clientId);
-                alert(res.message || "All devices activated");
+                const res = await activateAgentDevicesAction(agentId);
+                alert(res.message || "All agent devices activated");
                 router.refresh();
             } catch (e: any) {
-                alert(e.message || "Failed to activate all devices");
+                alert(e.message || "Failed to activate agent devices");
             } finally {
                 setBusyStatus("");
             }
         });
     }
-    const current = String(status || "active").toLowerCase();
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
             {current !== "active" && (
                 <button
                     type="button"
@@ -124,14 +128,16 @@ export default function DeviceStatusActions({
                     {busyStatus === "revoked" ? "..." : "Revoke"}
                 </button>
             )}
+
             <button
                 type="button"
                 disabled={pending}
-                onClick={logoutAllDevices}
+                onClick={revokeSessions}
                 className="rounded bg-slate-100 px-3 py-1.5 text-[12px] font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
             >
-                {busyStatus === "logout_all" ? "..." : "Revoke Sessions"}
+                {busyStatus === "revoke_sessions" ? "..." : "Revoke Sessions"}
             </button>
+
             <button
                 type="button"
                 disabled={pending}
