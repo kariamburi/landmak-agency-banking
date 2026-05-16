@@ -162,25 +162,25 @@ export default function DeviceStatusActions({
 
             {open && modalData && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                         <div className="flex items-start gap-3">
                             <div
-                                className={`flex h-12 w-12 items-center justify-center rounded-full text-xl ${modalData.iconBg}`}
+                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl ${modalData.iconBg}`}
                             >
                                 {modalData.icon}
                             </div>
 
-                            <div className="flex-1">
-                                <h2 className="text-lg font-black text-slate-900">
+                            <div className="flex min-w-0 flex-1 flex-col">
+                                <h2 className="break-words text-lg font-black leading-snug text-slate-900">
                                     {modalData.title}
                                 </h2>
 
-                                <p className="mt-2 text-sm text-slate-600">
+                                <p className="mt-2 break-words text-sm leading-6 text-slate-600">
                                     {modalData.description}
                                 </p>
 
                                 <p
-                                    className={`mt-2 text-sm font-semibold ${modalData.warningColor}`}
+                                    className={`mt-2 break-words text-sm font-semibold leading-6 ${modalData.warningColor}`}
                                 >
                                     {modalData.warning}
                                 </p>
@@ -188,18 +188,18 @@ export default function DeviceStatusActions({
                         </div>
 
                         {error ? (
-                            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            <div className="mt-4 break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                                 {error}
                             </div>
                         ) : null}
 
                         {success ? (
-                            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                            <div className="mt-4 break-words rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                                 {success}
                             </div>
                         ) : null}
 
-                        <div className="mt-6 flex items-center justify-end gap-3">
+                        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
                             <button
                                 type="button"
                                 disabled={pending}
@@ -248,7 +248,8 @@ function getModalData(action: ActionType | null) {
                 title: "Block Member Device",
                 description:
                     "This device will be blocked from accessing the Member Mobile App.",
-                warning: "The member will not be able to use this device until activated again.",
+                warning:
+                    "The member will not be able to use this device until activated again.",
                 warningColor: "text-yellow-700",
                 confirmText: "Yes, Block",
                 loadingText: "Blocking...",
@@ -262,7 +263,8 @@ function getModalData(action: ActionType | null) {
                 title: "Revoke Member Device",
                 description:
                     "This device authorization will be revoked from the Member Mobile App.",
-                warning: "The member may need to verify again before using this device.",
+                warning:
+                    "The member may need to verify again before using this device.",
                 warningColor: "text-red-600",
                 confirmText: "Yes, Revoke",
                 loadingText: "Revoking...",
@@ -288,8 +290,7 @@ function getModalData(action: ActionType | null) {
                 icon: "✅",
                 iconBg: "bg-green-100",
                 title: "Activate All Member Devices",
-                description:
-                    "All devices linked to this member will be activated.",
+                description: "All devices linked to this member will be activated.",
                 warning: "Use this only when you trust all registered devices.",
                 warningColor: "text-green-700",
                 confirmText: "Yes, Activate All",

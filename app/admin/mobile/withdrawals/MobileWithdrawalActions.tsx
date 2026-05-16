@@ -10,7 +10,6 @@ import {
 
 function canApprove(status: string) {
     const s = String(status || "").toLowerCase();
-
     return s === "pending" || s === "pending_approval";
 }
 
@@ -139,10 +138,10 @@ export default function MobileWithdrawalActions({
 
             {open && action && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                         <div className="flex items-start gap-3">
                             <div
-                                className={`flex h-12 w-12 items-center justify-center rounded-full text-xl ${action === "approve"
+                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl ${action === "approve"
                                     ? "bg-[#0F3D2E]/10"
                                     : "bg-red-100"
                                     }`}
@@ -150,21 +149,21 @@ export default function MobileWithdrawalActions({
                                 {action === "approve" ? "✅" : "⚠️"}
                             </div>
 
-                            <div className="flex-1">
-                                <h2 className="text-lg font-black text-slate-900">
+                            <div className="flex min-w-0 flex-1 flex-col">
+                                <h2 className="break-words text-lg font-black leading-snug text-slate-900">
                                     {action === "approve"
                                         ? "Approve Mobile Withdrawal"
                                         : "Reject Mobile Withdrawal"}
                                 </h2>
 
-                                <p className="mt-2 text-sm text-slate-600">
+                                <p className="mt-2 break-words text-sm leading-6 text-slate-600">
                                     {action === "approve"
                                         ? `Approve withdrawal #${id}?`
                                         : `Reject withdrawal #${id}?`}
                                 </p>
 
                                 <p
-                                    className={`mt-2 text-sm font-semibold ${action === "approve"
+                                    className={`mt-2 break-words text-sm font-semibold leading-6 ${action === "approve"
                                         ? "text-[#0F3D2E]"
                                         : "text-red-600"
                                         }`}
@@ -178,7 +177,7 @@ export default function MobileWithdrawalActions({
 
                         {action === "reject" ? (
                             <div className="mt-4">
-                                <label className="mb-1 block text-sm font-bold text-slate-700">
+                                <label className="mb-1 block break-words text-sm font-bold text-slate-700">
                                     Rejection Reason
                                 </label>
 
@@ -193,18 +192,18 @@ export default function MobileWithdrawalActions({
                         ) : null}
 
                         {error ? (
-                            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            <div className="mt-4 break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                                 {error}
                             </div>
                         ) : null}
 
                         {success ? (
-                            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                            <div className="mt-4 break-words rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                                 {success}
                             </div>
                         ) : null}
 
-                        <div className="mt-6 flex items-center justify-end gap-3">
+                        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
                             <button
                                 type="button"
                                 disabled={pending}

@@ -57,35 +57,35 @@ export default function RevokeSessionButton({
 
             {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-2xl">
                         <div className="flex items-start gap-3">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 text-xl">
                                 ⚠️
                             </div>
 
-                            <div className="flex-1">
-                                <h2 className="text-lg font-black text-slate-900">
+                            <div className="flex min-w-0 flex-1 flex-col">
+                                <h2 className="break-words text-lg font-black leading-snug text-slate-900">
                                     Revoke Member Session
                                 </h2>
 
-                                <p className="mt-2 text-sm text-slate-600">
+                                <p className="mt-2 break-words text-sm leading-6 text-slate-600">
                                     This mobile session will be immediately logged out
                                     from the Member Mobile App.
                                 </p>
 
-                                <p className="mt-2 text-sm font-semibold text-red-600">
+                                <p className="mt-2 break-words text-sm font-semibold leading-6 text-red-600">
                                     The member will need to login again.
                                 </p>
                             </div>
                         </div>
 
                         {error ? (
-                            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            <div className="mt-4 break-words rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                                 {error}
                             </div>
                         ) : null}
 
-                        <div className="mt-6 flex items-center justify-end gap-3">
+                        <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
                             <button
                                 type="button"
                                 disabled={pending}
