@@ -14,6 +14,8 @@ function canApprove(status: string) {
     return s === "pending" || s === "pending_approval";
 }
 
+type ModalAction = "approve" | "reject" | null;
+
 export default function MobileWithdrawalActions({
     id,
     status,
@@ -24,74 +26,80 @@ export default function MobileWithdrawalActions({
     const router = useRouter();
 
     const [pending, startTransition] = useTransition();
+    const [busy, setBusy] = useState<"" | "approve" | "reject">("");
 
-    const [busy, setBusy] = useState<
-        "" | "approve" | "reject"
-    >("");
+    const [open, setOpen] = useState(false);
+    const [action, setAction] = useState<ModalAction>(null);
+    const [reason, setReason] = useState("Rejected by mobile banking admin");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const actionable = canApprove(status);
 
-    async function handleApprove() {
+    function openModal(nextAction: ModalAction) {
         if (!actionable) return;
 
-        const confirmed = confirm(
-            `Approve withdrawal #${id}?`
-        );
-
-        if (!confirmed) return;
-
-        setBusy("approve");
-
-        startTransition(async () => {
-            try {
-                const res = await approveMobileWithdrawalAction(id);
-
-                alert(
-                    res?.message ||
-                    "Withdrawal approved successfully"
-                );
-
-                router.refresh();
-            } catch (e: any) {
-                alert(
-                    e?.message ||
-                    "Failed to approve withdrawal"
-                );
-            } finally {
-                setBusy("");
-            }
-        });
+        setAction(nextAction);
+        setReason("Rejected by mobile banking admin");
+        setError("");
+        setSuccess("");
+        setOpen(true);
     }
 
-    async function handleReject() {
-        if (!actionable) return;
+    function closeModal() {
+        if (pending) return;
 
-        const reason = prompt(
-            "Reason for rejection:",
-            "Rejected by mobile banking admin"
-        );
+        setOpen(false);
+        setAction(null);
+        setError("");
+        setSuccess("");
+    }
 
-        if (reason === null) return;
+    function handleConfirm() {
+        if (!action || !actionable) return;
 
-        setBusy("reject");
+        setError("");
+        setSuccess("");
+
+        if (action === "reject" && !reason.trim()) {
+            setError("Please enter rejection reason");
+            return;
+        }
+
+        setBusy(action);
 
         startTransition(async () => {
             try {
-                const res = await rejectMobileWithdrawalAction(
-                    id,
-                    reason
-                );
+                let res: any;
 
-                alert(
+                if (action === "approve") {
+                    res = await approveMobileWithdrawalAction(id);
+                }
+
+                if (action === "reject") {
+                    res = await rejectMobileWithdrawalAction(id, reason.trim());
+                }
+
+                setSuccess(
                     res?.message ||
-                    "Withdrawal rejected successfully"
+                    (action === "approve"
+                        ? "Withdrawal approved successfully"
+                        : "Withdrawal rejected successfully")
                 );
 
-                router.refresh();
+                setTimeout(() => {
+                    setOpen(false);
+                    setAction(null);
+                    setSuccess("");
+                    router.refresh();
+                }, 700);
             } catch (e: any) {
-                alert(
+                console.log("MOBILE WITHDRAWAL ACTION ERROR:", e);
+                setError(
                     e?.message ||
-                    "Failed to reject withdrawal"
+                    (action === "approve"
+                        ? "Failed to approve withdrawal"
+                        : "Failed to reject withdrawal")
                 );
             } finally {
                 setBusy("");
@@ -108,28 +116,125 @@ export default function MobileWithdrawalActions({
     }
 
     return (
-        <div className="flex items-center gap-2">
-            <button
-                type="button"
-                disabled={pending}
-                onClick={handleApprove}
-                className="rounded-md bg-[#0F3D2E] px-3 py-1.5 text-[12px] font-bold text-white transition hover:bg-[#145A43] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-                {busy === "approve"
-                    ? "Processing..."
-                    : "Approve"}
-            </button>
+        <>
+            <div className="flex items-center gap-2">
+                <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => openModal("approve")}
+                    className="rounded-md bg-[#0F3D2E] px-3 py-1.5 text-[12px] font-bold text-white transition hover:bg-[#145A43] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {busy === "approve" ? "Processing..." : "Approve"}
+                </button>
 
-            <button
-                type="button"
-                disabled={pending}
-                onClick={handleReject}
-                className="rounded-md bg-red-100 px-3 py-1.5 text-[12px] font-bold text-red-700 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-                {busy === "reject"
-                    ? "Rejecting..."
-                    : "Reject"}
-            </button>
-        </div>
+                <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => openModal("reject")}
+                    className="rounded-md bg-red-100 px-3 py-1.5 text-[12px] font-bold text-red-700 transition hover:bg-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {busy === "reject" ? "Rejecting..." : "Reject"}
+                </button>
+            </div>
+
+            {open && action && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                        <div className="flex items-start gap-3">
+                            <div
+                                className={`flex h-12 w-12 items-center justify-center rounded-full text-xl ${action === "approve"
+                                    ? "bg-[#0F3D2E]/10"
+                                    : "bg-red-100"
+                                    }`}
+                            >
+                                {action === "approve" ? "✅" : "⚠️"}
+                            </div>
+
+                            <div className="flex-1">
+                                <h2 className="text-lg font-black text-slate-900">
+                                    {action === "approve"
+                                        ? "Approve Mobile Withdrawal"
+                                        : "Reject Mobile Withdrawal"}
+                                </h2>
+
+                                <p className="mt-2 text-sm text-slate-600">
+                                    {action === "approve"
+                                        ? `Approve withdrawal #${id}?`
+                                        : `Reject withdrawal #${id}?`}
+                                </p>
+
+                                <p
+                                    className={`mt-2 text-sm font-semibold ${action === "approve"
+                                        ? "text-[#0F3D2E]"
+                                        : "text-red-600"
+                                        }`}
+                                >
+                                    {action === "approve"
+                                        ? "Confirm only after reviewing the withdrawal details."
+                                        : "Please provide a clear reason for rejection."}
+                                </p>
+                            </div>
+                        </div>
+
+                        {action === "reject" ? (
+                            <div className="mt-4">
+                                <label className="mb-1 block text-sm font-bold text-slate-700">
+                                    Rejection Reason
+                                </label>
+
+                                <textarea
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    disabled={pending}
+                                    rows={3}
+                                    className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#0F3D2E] focus:ring-2 focus:ring-[#0F3D2E]/20"
+                                />
+                            </div>
+                        ) : null}
+
+                        {error ? (
+                            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {error}
+                            </div>
+                        ) : null}
+
+                        {success ? (
+                            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                                {success}
+                            </div>
+                        ) : null}
+
+                        <div className="mt-6 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                disabled={pending}
+                                onClick={closeModal}
+                                className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={pending}
+                                onClick={handleConfirm}
+                                className={`rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-60 ${action === "approve"
+                                    ? "bg-[#0F3D2E] hover:bg-[#145A43]"
+                                    : "bg-red-600 hover:bg-red-700"
+                                    }`}
+                            >
+                                {pending
+                                    ? action === "approve"
+                                        ? "Approving..."
+                                        : "Rejecting..."
+                                    : action === "approve"
+                                        ? "Yes, Approve"
+                                        : "Yes, Reject"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }

@@ -8,6 +8,13 @@ import {
     activateAgentDevicesAction,
 } from "./actions";
 
+type ActionType =
+    | "active"
+    | "blocked"
+    | "revoked"
+    | "revoke_sessions"
+    | "activate_all";
+
 export default function DeviceStatusActions({
     deviceId,
     agentId,
@@ -18,76 +25,84 @@ export default function DeviceStatusActions({
     status: string;
 }) {
     const router = useRouter();
+
     const [pending, startTransition] = useTransition();
-    const [busyStatus, setBusyStatus] = useState("");
+    const [busyStatus, setBusyStatus] = useState<ActionType | "">("");
+    const [open, setOpen] = useState(false);
+    const [selectedAction, setSelectedAction] = useState<ActionType | null>(null);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const current = String(status || "active").toLowerCase();
 
-    function updateStatus(nextStatus: "active" | "blocked" | "revoked") {
-        const label =
-            nextStatus === "active"
-                ? "activate"
-                : nextStatus === "blocked"
-                    ? "block"
-                    : "revoke";
+    const modalData = getModalData(selectedAction);
 
-        if (!confirm(`Are you sure you want to ${label} this agent device?`)) return;
-
-        setBusyStatus(nextStatus);
-
-        startTransition(async () => {
-            try {
-                const res = await updateAgentDeviceStatusAction(deviceId, nextStatus);
-                alert(res.message || "Agent device updated successfully");
-                router.refresh();
-            } catch (e: any) {
-                alert(e.message || "Failed to update agent device");
-            } finally {
-                setBusyStatus("");
-            }
-        });
+    function openModal(action: ActionType) {
+        setError("");
+        setSuccess("");
+        setSelectedAction(action);
+        setOpen(true);
     }
 
-    function revokeSessions() {
-        if (!agentId) {
-            alert("Missing agent id");
+    function closeModal() {
+        if (pending) return;
+
+        setOpen(false);
+        setSelectedAction(null);
+        setError("");
+        setSuccess("");
+    }
+
+    async function handleConfirm() {
+        if (!selectedAction) return;
+
+        setError("");
+        setSuccess("");
+
+        if (
+            ["revoke_sessions", "activate_all"].includes(selectedAction) &&
+            !agentId
+        ) {
+            setError("Missing agent id");
             return;
         }
 
-        if (!confirm("Logout this agent from all active sessions?")) return;
-
-        setBusyStatus("revoke_sessions");
+        setBusyStatus(selectedAction);
 
         startTransition(async () => {
             try {
-                const res = await revokeAgentSessionsAction(agentId);
-                alert(res.message || "Agent sessions revoked");
-                router.refresh();
+                let res: any;
+
+                if (
+                    selectedAction === "active" ||
+                    selectedAction === "blocked" ||
+                    selectedAction === "revoked"
+                ) {
+                    res = await updateAgentDeviceStatusAction(
+                        deviceId,
+                        selectedAction
+                    );
+                }
+
+                if (selectedAction === "revoke_sessions") {
+                    res = await revokeAgentSessionsAction(agentId!);
+                }
+
+                if (selectedAction === "activate_all") {
+                    res = await activateAgentDevicesAction(agentId!);
+                }
+
+                setSuccess(res?.message || "Action completed successfully");
+
+                setTimeout(() => {
+                    setOpen(false);
+                    setSelectedAction(null);
+                    setSuccess("");
+                    router.refresh();
+                }, 700);
             } catch (e: any) {
-                alert(e.message || "Failed to revoke agent sessions");
-            } finally {
-                setBusyStatus("");
-            }
-        });
-    }
-
-    function activateAllDevices() {
-        if (!agentId) {
-            alert("Missing agent id");
-            return;
-        }
-
-        if (!confirm("Activate all devices for this agent?")) return;
-
-        setBusyStatus("activate_all");
-
-        startTransition(async () => {
-            try {
-                const res = await activateAgentDevicesAction(agentId);
-                alert(res.message || "All agent devices activated");
-                router.refresh();
-            } catch (e: any) {
-                alert(e.message || "Failed to activate agent devices");
+                console.log("DEVICE ACTION ERROR:", e);
+                setError(e?.message || "Failed to complete action");
             } finally {
                 setBusyStatus("");
             }
@@ -95,57 +110,196 @@ export default function DeviceStatusActions({
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-2">
-            {current !== "active" && (
+        <>
+            <div className="flex flex-wrap items-center gap-2">
+                {current !== "active" && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => openModal("active")}
+                        className="rounded bg-[#0F3D2E] px-3 py-1.5 text-[12px] font-bold text-white hover:bg-[#145A43] disabled:opacity-50"
+                    >
+                        {busyStatus === "active" ? "..." : "Activate"}
+                    </button>
+                )}
+
+                {current !== "blocked" && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => openModal("blocked")}
+                        className="rounded bg-yellow-100 px-3 py-1.5 text-[12px] font-bold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
+                    >
+                        {busyStatus === "blocked" ? "..." : "Block"}
+                    </button>
+                )}
+
+                {current !== "revoked" && (
+                    <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => openModal("revoked")}
+                        className="rounded bg-red-100 px-3 py-1.5 text-[12px] font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
+                    >
+                        {busyStatus === "revoked" ? "..." : "Revoke"}
+                    </button>
+                )}
+
                 <button
                     type="button"
                     disabled={pending}
-                    onClick={() => updateStatus("active")}
-                    className="rounded bg-[#0F3D2E] px-3 py-1.5 text-[12px] font-bold text-white hover:bg-[#145A43] disabled:opacity-50"
+                    onClick={() => openModal("revoke_sessions")}
+                    className="rounded bg-slate-100 px-3 py-1.5 text-[12px] font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
                 >
-                    {busyStatus === "active" ? "..." : "Activate"}
+                    {busyStatus === "revoke_sessions" ? "..." : "Revoke Sessions"}
                 </button>
-            )}
 
-            {current !== "blocked" && (
                 <button
                     type="button"
                     disabled={pending}
-                    onClick={() => updateStatus("blocked")}
-                    className="rounded bg-yellow-100 px-3 py-1.5 text-[12px] font-bold text-yellow-700 hover:bg-yellow-200 disabled:opacity-50"
+                    onClick={() => openModal("activate_all")}
+                    className="rounded bg-[#0F3D2E]/10 px-3 py-1.5 text-[12px] font-bold text-[#0F3D2E] hover:bg-[#0F3D2E] hover:text-white disabled:opacity-50"
                 >
-                    {busyStatus === "blocked" ? "..." : "Block"}
+                    {busyStatus === "activate_all" ? "..." : "Activate All"}
                 </button>
+            </div>
+
+            {open && modalData && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                        <div className="flex items-start gap-3">
+                            <div
+                                className={`flex h-12 w-12 items-center justify-center rounded-full text-xl ${modalData.iconBg}`}
+                            >
+                                {modalData.icon}
+                            </div>
+
+                            <div className="flex-1">
+                                <h2 className="text-lg font-black text-slate-900">
+                                    {modalData.title}
+                                </h2>
+
+                                <p className="mt-2 text-sm text-slate-600">
+                                    {modalData.description}
+                                </p>
+
+                                <p className={`mt-2 text-sm font-semibold ${modalData.warningColor}`}>
+                                    {modalData.warning}
+                                </p>
+                            </div>
+                        </div>
+
+                        {error ? (
+                            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                {error}
+                            </div>
+                        ) : null}
+
+                        {success ? (
+                            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                                {success}
+                            </div>
+                        ) : null}
+
+                        <div className="mt-6 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                disabled={pending}
+                                onClick={closeModal}
+                                className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={pending}
+                                onClick={handleConfirm}
+                                className={`rounded-xl px-4 py-2 text-sm font-bold text-white disabled:opacity-60 ${modalData.buttonClass}`}
+                            >
+                                {pending ? modalData.loadingText : modalData.confirmText}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
-
-            {current !== "revoked" && (
-                <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => updateStatus("revoked")}
-                    className="rounded bg-red-100 px-3 py-1.5 text-[12px] font-bold text-red-700 hover:bg-red-200 disabled:opacity-50"
-                >
-                    {busyStatus === "revoked" ? "..." : "Revoke"}
-                </button>
-            )}
-
-            <button
-                type="button"
-                disabled={pending}
-                onClick={revokeSessions}
-                className="rounded bg-slate-100 px-3 py-1.5 text-[12px] font-bold text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-            >
-                {busyStatus === "revoke_sessions" ? "..." : "Revoke Sessions"}
-            </button>
-
-            <button
-                type="button"
-                disabled={pending}
-                onClick={activateAllDevices}
-                className="rounded bg-[#0F3D2E]/10 px-3 py-1.5 text-[12px] font-bold text-[#0F3D2E] hover:bg-[#0F3D2E] hover:text-white disabled:opacity-50"
-            >
-                {busyStatus === "activate_all" ? "..." : "Activate All"}
-            </button>
-        </div>
+        </>
     );
+}
+
+function getModalData(action: ActionType | null) {
+    switch (action) {
+        case "active":
+            return {
+                icon: "✅",
+                iconBg: "bg-green-100",
+                title: "Activate Agent Device",
+                description:
+                    "This device will be allowed to access the Agency Mobile App again.",
+                warning: "Only activate trusted devices.",
+                warningColor: "text-green-700",
+                confirmText: "Yes, Activate",
+                loadingText: "Activating...",
+                buttonClass: "bg-[#0F3D2E] hover:bg-[#145A43]",
+            };
+
+        case "blocked":
+            return {
+                icon: "⛔",
+                iconBg: "bg-yellow-100",
+                title: "Block Agent Device",
+                description:
+                    "This device will be blocked from accessing the Agency Mobile App.",
+                warning: "The agent will not be able to use this device until activated again.",
+                warningColor: "text-yellow-700",
+                confirmText: "Yes, Block",
+                loadingText: "Blocking...",
+                buttonClass: "bg-yellow-600 hover:bg-yellow-700",
+            };
+
+        case "revoked":
+            return {
+                icon: "⚠️",
+                iconBg: "bg-red-100",
+                title: "Revoke Agent Device",
+                description:
+                    "This device authorization will be revoked from the Agency Mobile App.",
+                warning: "The agent may need to verify again before using this device.",
+                warningColor: "text-red-600",
+                confirmText: "Yes, Revoke",
+                loadingText: "Revoking...",
+                buttonClass: "bg-red-600 hover:bg-red-700",
+            };
+
+        case "revoke_sessions":
+            return {
+                icon: "🔐",
+                iconBg: "bg-red-100",
+                title: "Revoke Agent Sessions",
+                description:
+                    "This agent will be logged out from all active Agency Mobile App sessions.",
+                warning: "The agent will need to login again using OTP.",
+                warningColor: "text-red-600",
+                confirmText: "Yes, Revoke Sessions",
+                loadingText: "Revoking...",
+                buttonClass: "bg-red-600 hover:bg-red-700",
+            };
+
+        case "activate_all":
+            return {
+                icon: "✅",
+                iconBg: "bg-green-100",
+                title: "Activate All Agent Devices",
+                description:
+                    "All devices linked to this agent will be activated.",
+                warning: "Use this only when you trust all registered devices.",
+                warningColor: "text-green-700",
+                confirmText: "Yes, Activate All",
+                loadingText: "Activating...",
+                buttonClass: "bg-[#0F3D2E] hover:bg-[#145A43]",
+            };
+
+        default:
+            return null;
+    }
 }
