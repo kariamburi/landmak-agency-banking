@@ -217,6 +217,15 @@ export default async function MobileWithdrawalsPage({
                                 <th className="border-r border-slate-200 px-2 py-2 text-right font-bold">
                                     Amount
                                 </th>
+
+                                <th className="border-r border-slate-200 px-2 py-2 text-right font-bold">
+                                    Charge
+                                </th>
+
+                                <th className="border-r border-slate-200 px-2 py-2 text-right font-bold">
+                                    Total Debit
+                                </th>
+
                                 <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
                                     Receipt
                                 </th>
@@ -260,6 +269,14 @@ export default async function MobileWithdrawalsPage({
 
                                         <td className="whitespace-nowrap px-2 py-2 text-right font-semibold text-slate-700">
                                             {money(w.amount)}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2 text-right font-semibold text-slate-600">
+                                            {money(w.charge_amount)}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2 text-right font-black text-[#0F3D2E]">
+                                            {money(w.total_debit || w.amount)}
                                         </td>
 
                                         <td className="whitespace-nowrap px-2 py-2 font-black text-[#0F3D2E]">

@@ -20,6 +20,8 @@ export default function ExportMobileWithdrawalsButton({
         const headers = [
             "Phone",
             "Amount",
+            "Charge",
+            "Total Debit",
             "Member",
             "Account",
             "Status",
@@ -30,6 +32,8 @@ export default function ExportMobileWithdrawalsButton({
         const rows = withdrawals.map((w) => [
             w.phone || "",
             moneyNumber(w.amount),
+            moneyNumber(w.charge_amount || 0),
+            moneyNumber(w.total_debit || w.amount || 0),
             w.member_name || "",
             w.account_no || "",
             w.status || "",
