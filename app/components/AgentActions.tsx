@@ -166,7 +166,15 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                 subtitle="Fund an agent wallet for customer withdrawals."
             >
                 <form onSubmit={handleTopupSubmit}>
-                    <div style={{ display: "grid", gap: 16 }}>
+                    <div
+                        style={{
+                            display: "grid",
+                            gap: 14,
+                            // maxHeight: "calc(95vh - 160px)",
+                            overflowY: "auto",
+                            paddingRight: 6,
+                        }}
+                    >
                         <Field label="Select agent">
                             <select style={inputStyle} name="agent_id" required>
                                 <option value="">Choose agent</option>
@@ -179,7 +187,37 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                         </Field>
 
                         <Field label="Amount">
-                            <input style={inputStyle} name="amount" type="number" placeholder="100000" required />
+                            <input
+                                style={inputStyle}
+                                name="amount"
+                                type="number"
+                                placeholder="100000"
+                                required
+                            />
+                        </Field>
+
+                        <Field label="Payment method">
+                            <select style={inputStyle} name="method">
+                                <option value="mpesa">M-Pesa</option>
+                                <option value="bank">Bank</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </Field>
+
+                        <Field label="Reference">
+                            <input
+                                style={inputStyle}
+                                name="reference"
+                                placeholder="M-Pesa code / bank ref"
+                            />
+                        </Field>
+
+                        <Field label="Reason">
+                            <input
+                                style={inputStyle}
+                                name="reason"
+                                placeholder="Agent funded float"
+                            />
                         </Field>
                     </div>
 
@@ -188,7 +226,7 @@ export default function AgentActions({ agents, createAction, topupAction }: any)
                         disabled={isPending}
                         style={{
                             width: "100%",
-                            marginTop: 24,
+                            marginTop: 18,
                             padding: 16,
                             borderRadius: 18,
                             border: "none",

@@ -23,19 +23,23 @@ export default function Modal({ open, onClose, title, subtitle, children }: any)
                 style={{
                     width: "100%",
                     maxWidth: 720,
+                    maxHeight: "95vh",
                     background: "#fff",
                     borderRadius: 28,
                     boxShadow: "0 30px 80px rgba(15, 23, 42, 0.35)",
                     overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
                 }}
             >
                 <div
                     style={{
-                        padding: "24px 28px",
+                        padding: "22px 28px",
                         borderBottom: "1px solid #E2E8F0",
                         display: "flex",
                         justifyContent: "space-between",
                         gap: 20,
+                        flexShrink: 0,
                     }}
                 >
                     <div>
@@ -47,24 +51,23 @@ export default function Modal({ open, onClose, title, subtitle, children }: any)
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        style={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: 14,
-                            border: "1px solid #E2E8F0",
-                            background: "#F8FAFC",
-                            fontSize: 22,
-                            cursor: "pointer",
-                        }}
-                    >
+                    <button type="button" onClick={onClose} style={{
+                        width: 42, height: 42, borderRadius: 14,
+                        border: "1px solid #E2E8F0", background: "#F8FAFC",
+                        fontSize: 22, cursor: "pointer",
+                    }}>
                         ×
                     </button>
                 </div>
 
-                <div style={{ padding: 28 }}>{children}</div>
+                <div
+                    style={{
+                        padding: 28,
+                        overflowY: "auto",
+                    }}
+                >
+                    {children}
+                </div>
             </div>
         </div>
     );
