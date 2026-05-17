@@ -5,11 +5,19 @@ import { saveGlobalSettingsAction } from "./actions";
 
 export default function GlobalSettingsForm({ initialSettings }: any) {
     const [form, setForm] = useState({
-        globalAdminOtpExpiryMinutes: initialSettings?.globalAdminOtpExpiryMinutes ?? 5,
-        globalAdminOtpMaxAttempts: initialSettings?.globalAdminOtpMaxAttempts ?? 3,
+        globalAdminOtpExpiryMinutes:
+            initialSettings?.globalAdminOtpExpiryMinutes ?? 5,
+        globalAdminOtpMaxAttempts:
+            initialSettings?.globalAdminOtpMaxAttempts ?? 3,
         globalAdminSessionTimeoutMinutes:
             initialSettings?.globalAdminSessionTimeoutMinutes ?? 15,
-        globalMaintenanceMode: initialSettings?.globalMaintenanceMode ?? false,
+        globalMaintenanceMode:
+            initialSettings?.globalMaintenanceMode ?? false,
+
+        globalSmsEnabled:
+            initialSettings?.globalSmsEnabled ?? true,
+        globalMinPasswordLength:
+            initialSettings?.globalMinPasswordLength ?? 8,
     });
 
     const [message, setMessage] = useState("");
@@ -25,12 +33,14 @@ export default function GlobalSettingsForm({ initialSettings }: any) {
         setError("");
 
         startTransition(async () => {
-            try {
-                const res = await saveGlobalSettingsAction(form);
-                setMessage(res.message || "Global settings saved successfully");
-            } catch (e: any) {
-                setError(e.message || "Failed to save global settings");
+            const res = await saveGlobalSettingsAction(form);
+
+            if (!res?.ok) {
+                setError(res?.error || "Failed to save global settings");
+                return;
             }
+
+            setMessage(res.message || "Global settings saved successfully");
         });
     }
 
@@ -72,13 +82,11 @@ export default function GlobalSettingsForm({ initialSettings }: any) {
             <div className="mt-6 border-t pt-5">
                 <SectionTitle title="System Availability" />
 
-                <div className="grid gap-4 md:grid-cols-1">
-                    <Toggle
-                        label="Maintenance Mode"
-                        value={form.globalMaintenanceMode}
-                        onChange={(v: boolean) => updateField("globalMaintenanceMode", v)}
-                    />
-                </div>
+                <Toggle
+                    label="Maintenance Mode"
+                    value={form.globalMaintenanceMode}
+                    onChange={(v: boolean) => updateField("globalMaintenanceMode", v)}
+                />
             </div>
 
             {message && (
@@ -95,6 +103,7 @@ export default function GlobalSettingsForm({ initialSettings }: any) {
 
             <div className="mt-5 flex justify-end border-t pt-4">
                 <button
+                    type="button"
                     onClick={saveSettings}
                     disabled={pending}
                     className={`h-10 rounded-md px-5 text-sm font-black text-white ${pending
@@ -146,8 +155,13 @@ function Toggle({ label, value, onChange }: any) {
                 <div>
                     <div className="text-sm font-black text-slate-900">{label}</div>
 
-                    <div className={`mt-1 text-xs font-bold ${value ? "text-red-600" : "text-[#0F3D2E]"}`}>
-                        {value ? "Enabled - Apps temporarily unavailable" : "Disabled - System live"}
+                    <div
+                        className={`mt-1 text-xs font-bold ${value ? "text-red-600" : "text-[#0F3D2E]"
+                            }`}
+                    >
+                        {value
+                            ? "Enabled - Apps temporarily unavailable"
+                            : "Disabled - System live"}
                     </div>
 
                     {value && (
@@ -160,11 +174,11 @@ function Toggle({ label, value, onChange }: any) {
                 <button
                     type="button"
                     onClick={handleClick}
-                    className={`relative cursor-pointer h-7 w-14 shrink-0 rounded-full transition ${value ? "bg-red-600" : "bg-slate-300"
+                    className={`relative h-7 w-14 shrink-0 cursor-pointer rounded-full transition ${value ? "bg-red-600" : "bg-slate-300"
                         }`}
                 >
                     <span
-                        className={`absolute cursor-pointer top-1 h-5 w-5 rounded-full bg-white transition ${value ? "left-8" : "left-1"
+                        className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${value ? "left-8" : "left-1"
                             }`}
                     />
                 </button>

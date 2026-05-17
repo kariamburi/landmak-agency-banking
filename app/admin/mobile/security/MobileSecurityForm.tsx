@@ -27,6 +27,11 @@ export default function MobileSecurityForm({ initialSettings }: any) {
             initialSettings?.mobileDailyWithdrawalLimit ?? 100000,
         mobileHighRiskApprovalAmount:
             initialSettings?.mobileHighRiskApprovalAmount ?? 50000,
+
+        b2cBalanceAlertThreshold:
+            initialSettings?.b2cBalanceAlertThreshold ?? 50000,
+        b2cAlertPhone:
+            initialSettings?.b2cAlertPhone ?? "",
     });
 
     const [message, setMessage] = useState("");
@@ -103,6 +108,31 @@ export default function MobileSecurityForm({ initialSettings }: any) {
                 </div>
             </div>
 
+            <div className="mt-6 border-t pt-5">
+                <SectionTitle title="B2C Float Alerts" />
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Input
+                        label="B2C Balance Alert Threshold"
+                        name="b2cBalanceAlertThreshold"
+                        value={form.b2cBalanceAlertThreshold}
+                        onChange={updateField}
+                    />
+
+                    <TextInput
+                        label="B2C Alert Phone"
+                        name="b2cAlertPhone"
+                        value={form.b2cAlertPhone}
+                        onChange={updateField}
+                        placeholder="2547XXXXXXXX"
+                    />
+                </div>
+
+                <p className="mt-3 text-xs font-semibold text-slate-500">
+                    Admin will receive SMS warning when B2C utility balance falls below this threshold.
+                </p>
+            </div>
+
             {message && (
                 <div className="mt-5 rounded-md bg-green-50 px-4 py-3 text-sm font-bold text-green-700">
                     {message}
@@ -142,6 +172,21 @@ function Input({ label, name, value, onChange }: any) {
             <input
                 type="number"
                 value={value}
+                onChange={(e) => onChange(name, e.target.value)}
+                className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
+            />
+        </label>
+    );
+}
+
+function TextInput({ label, name, value, onChange, placeholder }: any) {
+    return (
+        <label className="grid gap-2">
+            <span className="text-sm font-black text-slate-700">{label}</span>
+            <input
+                type="text"
+                value={value}
+                placeholder={placeholder}
                 onChange={(e) => onChange(name, e.target.value)}
                 className="h-10 min-w-0 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-[#0F3D2E]"
             />

@@ -9,14 +9,17 @@ export default async function MobileSecurityPage() {
     return (
         <div className="space-y-5">
             <div className="rounded-t-2xl px-6 py-5 text-white shadow">
-                <p className="text-sm font-semibold text-slate-500">Mobile Banking</p>
+                <p className="text-sm font-semibold text-slate-500">
+                    Mobile Banking
+                </p>
 
                 <h1 className="mt-1 text-3xl text-slate-900">
                     Mobile Security
                 </h1>
 
                 <p className="mt-2 text-sm text-slate-500">
-                    Manage OTP, PIN, device binding, sessions, withdrawal protection, and fraud controls.
+                    Manage OTP, PIN, device binding, sessions, withdrawal protection,
+                    B2C float alerts, and fraud controls.
                 </p>
             </div>
 
@@ -34,6 +37,13 @@ export default async function MobileSecurityPage() {
                 <SummaryCard label="Daily Limit" value={`KES ${Number(settings.mobileDailyWithdrawalLimit || 0).toLocaleString("en-KE")}`} />
             </div>
 
+            <div className="grid gap-4 md:grid-cols-4">
+                <SummaryCard label="High Risk Limit" value={`KES ${Number(settings.mobileHighRiskApprovalAmount || 0).toLocaleString("en-KE")}`} />
+                <SummaryCard label="B2C Alert Limit" value={`KES ${Number(settings.b2cBalanceAlertThreshold || 0).toLocaleString("en-KE")}`} />
+                <SummaryCard label="B2C Alert Phone" value={settings.b2cAlertPhone || "Not set"} />
+                <SummaryCard label="Biometric Withdrawal" value={settings.mobileRequireBiometricForWithdrawals ? "Required" : "Disabled"} />
+            </div>
+
             <MobileSecurityForm initialSettings={settings} />
         </div>
     );
@@ -43,7 +53,7 @@ function SummaryCard({ label, value }: any) {
     return (
         <div className="rounded-2xl bg-[#0F3D2E] p-5 text-white shadow-sm">
             <p className="text-sm font-semibold text-white/70">{label}</p>
-            <h2 className="mt-2 text-xl font-black">{value}</h2>
+            <h2 className="mt-2 break-words text-xl font-black">{value}</h2>
         </div>
     );
 }

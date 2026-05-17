@@ -11,17 +11,11 @@ function money(value: any) {
 function statusClass(status: string) {
     const s = String(status || "").toLowerCase();
 
-    if (
-        s.includes("success") ||
-        s.includes("posted") ||
-        s.includes("completed")
-    ) {
+    if (s.includes("success") || s.includes("posted") || s.includes("completed")) {
         return "bg-[#0F3D2E]/10 text-[#0F3D2E]";
     }
 
-    if (s.includes("pending")) {
-        return "bg-yellow-100 text-yellow-700";
-    }
+    if (s.includes("pending")) return "bg-yellow-100 text-yellow-700";
 
     if (s.includes("fail") || s.includes("cancel")) {
         return "bg-red-100 text-red-700";
@@ -47,15 +41,12 @@ export default async function MobileStkPage({
     const phone = String(params?.phone || "").trim();
     const status = String(params?.status || "").trim().toLowerCase();
     const type = String(params?.type || "").trim().toLowerCase();
-    const accountRef = String(params?.accountRef || "")
-        .trim()
-        .toLowerCase();
+    const accountRef = String(params?.accountRef || "").trim().toLowerCase();
 
-    const res = await mobileAdminGet(
-        "/api/admin/mobile/stk-transactions"
-    );
+    const res = await mobileAdminGet("/api/admin/mobile/stk-transactions");
 
     const transactions = res.transactions || [];
+    const c2bBalance = res.c2bBalance || null;
 
     const filteredTransactions = transactions.filter((tx: any) => {
         const txPhone = String(tx.phone || "");
@@ -89,18 +80,10 @@ export default async function MobileStkPage({
     if (accountRef) query.set("accountRef", accountRef);
 
     const prevQuery = new URLSearchParams(query);
-
-    prevQuery.set(
-        "page",
-        String(Math.max(safePage - 1, 1))
-    );
+    prevQuery.set("page", String(Math.max(safePage - 1, 1)));
 
     const nextQuery = new URLSearchParams(query);
-
-    nextQuery.set(
-        "page",
-        String(Math.min(safePage + 1, totalPages))
-    );
+    nextQuery.set("page", String(Math.min(safePage + 1, totalPages)));
 
     return (
         <div className="space-y-5">
@@ -114,8 +97,18 @@ export default async function MobileStkPage({
                 </h1>
 
                 <p className="mt-2 text-sm text-slate-500">
-                    Monitor M-Pesa STK requests, account references,
-                    transaction status, and posting results.
+                    Monitor M-Pesa STK requests, receipt numbers, account
+                    references, transaction status, and posting results.
+                </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                    C2B Paybill Current Balance
+                </p>
+
+                <p className="mt-2 text-2xl font-black text-[#0F3D2E]">
+                    {money(c2bBalance?.balance || 0)}
                 </p>
             </div>
 
@@ -191,7 +184,7 @@ export default async function MobileStkPage({
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1050px] border-collapse text-[12px]">
+                    <table className="w-full min-w-[1200px] border-collapse text-[12px]">
                         <thead>
                             <tr className="bg-slate-100 text-slate-900">
                                 <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
@@ -204,6 +197,10 @@ export default async function MobileStkPage({
 
                                 <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
                                     Account Ref
+                                </th>
+
+                                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                    Receipt
                                 </th>
 
                                 <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
@@ -228,7 +225,7 @@ export default async function MobileStkPage({
                             {paginatedTransactions.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan={7}
+                                        colSpan={8}
                                         className="px-5 py-8 text-center text-slate-500"
                                     >
                                         No STK transactions found.
@@ -252,6 +249,10 @@ export default async function MobileStkPage({
                                             {tx.account_ref || "-"}
                                         </td>
 
+                                        <td className="whitespace-nowrap px-2 py-2 font-black text-[#0F3D2E]">
+                                            {tx.mpesa_receipt_number || "-"}
+                                        </td>
+
                                         <td className="whitespace-nowrap px-2 py-2">
                                             {tx.fineract_type || "-"}
                                         </td>
@@ -272,9 +273,9 @@ export default async function MobileStkPage({
 
                                         <td className="whitespace-nowrap px-2 py-2 text-slate-600">
                                             {tx.created_at
-                                                ? new Date(tx.created_at).toLocaleString(
-                                                    "en-KE"
-                                                )
+                                                ? new Date(
+                                                    tx.created_at
+                                                ).toLocaleString("en-KE")
                                                 : "-"}
                                         </td>
                                     </tr>
@@ -291,9 +292,7 @@ export default async function MobileStkPage({
 
                     <Link
                         href={`/admin/mobile/stk?${prevQuery.toString()}`}
-                        className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1
-                            ? "pointer-events-none opacity-40"
-                            : ""
+                        className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1 ? "pointer-events-none opacity-40" : ""
                             }`}
                     >
                         Prev

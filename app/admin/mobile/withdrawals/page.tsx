@@ -43,7 +43,14 @@ export default async function MobileWithdrawalsPage({
     const status = String(params?.status || "").trim().toLowerCase();
 
     const res = await mobileAdminGet("/api/admin/mobile/withdrawals");
+
     const withdrawals = res.withdrawals || [];
+    const c2bBalance = res.c2bBalance || null;
+    const b2cAlertThreshold = Number(res.b2cAlertThreshold || 0);
+
+    const currentBalance = Number(c2bBalance?.balance || 0);
+    const lowBalance =
+        b2cAlertThreshold > 0 && currentBalance <= b2cAlertThreshold;
 
     const filteredWithdrawals = withdrawals.filter((w: any) => {
         const wPhone = String(w.phone || "");
@@ -101,9 +108,42 @@ export default async function MobileWithdrawalsPage({
                 </h1>
 
                 <p className="mt-2 text-sm text-slate-500">
-                    Track mobile withdrawal requests, member details, approval status, and
-                    M-Pesa payout results.
+                    Track mobile withdrawal requests, M-Pesa payouts, receipt numbers,
+                    approval status, and B2C float balance.
                 </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+                <div
+                    className={`rounded-2xl border p-5 shadow-sm ${lowBalance
+                        ? "border-red-200 bg-red-50"
+                        : "border-slate-200 bg-white"
+                        }`}
+                >
+                    <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                        B2C Utility Balance
+                    </p>
+
+                    <h2
+                        className={`mt-2 text-2xl font-black ${lowBalance ? "text-red-700" : "text-[#0F3D2E]"
+                            }`}
+                    >
+                        {money(currentBalance)}
+                    </h2>
+
+                    {lowBalance ? (
+                        <p className="mt-2 text-xs font-bold text-red-700">
+                            Balance is below alert threshold. Top up B2C utility account.
+                        </p>
+                    ) : (
+                        <p className="mt-2 text-xs font-bold text-slate-500">
+                            Available for member payouts.
+                        </p>
+                    )}
+                </div>
+
+                <SummaryCard label="Alert Threshold" value={money(b2cAlertThreshold)} />
+                <SummaryCard label="Total Requests" value={total} />
             </div>
 
             <form
@@ -152,8 +192,7 @@ export default async function MobileWithdrawalsPage({
                 </div>
             </form>
 
-            <div className="grid gap-4 md:grid-cols-4">
-                <SummaryCard label="Total Requests" value={total} />
+            <div className="grid gap-4 md:grid-cols-3">
                 <SummaryCard label="Pending Approval" value={pendingCount} />
                 <SummaryCard label="Paid" value={paidCount} />
                 <SummaryCard label="Failed / Rejected" value={failedCount} />
@@ -169,7 +208,7 @@ export default async function MobileWithdrawalsPage({
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[1250px] border-collapse text-[12px]">
+                    <table className="w-full min-w-[1400px] border-collapse text-[12px]">
                         <thead>
                             <tr className="bg-slate-100 text-slate-900">
                                 <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
@@ -177,6 +216,9 @@ export default async function MobileWithdrawalsPage({
                                 </th>
                                 <th className="border-r border-slate-200 px-2 py-2 text-right font-bold">
                                     Amount
+                                </th>
+                                <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
+                                    Receipt
                                 </th>
                                 <th className="border-r border-slate-200 px-2 py-2 text-left font-bold">
                                     Member
@@ -203,7 +245,7 @@ export default async function MobileWithdrawalsPage({
                             {paginatedWithdrawals.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan={8}
+                                        colSpan={9}
                                         className="px-5 py-8 text-center text-slate-500"
                                     >
                                         No withdrawal requests found.
@@ -218,6 +260,10 @@ export default async function MobileWithdrawalsPage({
 
                                         <td className="whitespace-nowrap px-2 py-2 text-right font-semibold text-slate-700">
                                             {money(w.amount)}
+                                        </td>
+
+                                        <td className="whitespace-nowrap px-2 py-2 font-black text-[#0F3D2E]">
+                                            {w.mpesa_receipt_number || "-"}
                                         </td>
 
                                         <td className="whitespace-nowrap px-2 py-2 text-slate-600">
