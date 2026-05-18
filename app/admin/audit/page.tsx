@@ -89,7 +89,7 @@ export default async function AuditLogsPage({
       </div>
 
       <form
-        action="/admin/agency/audit"
+        action="/admin/audit"
         className="w-full overflow-hidden rounded-b-2xl border border-slate-200 bg-white p-5 shadow-sm"
       >
         <div className="mb-4 border-b border-slate-300 bg-slate-100 px-4 py-2 text-sm font-black text-slate-800">
@@ -138,7 +138,7 @@ export default async function AuditLogsPage({
             </button>
 
             <Link
-              href="/admin/agency/audit"
+              href="/admin/audit"
               className="flex h-10 items-center rounded-md border border-slate-300 px-5 text-sm font-black hover:bg-slate-50"
             >
               Reset
@@ -249,7 +249,7 @@ export default async function AuditLogsPage({
           <span className="text-slate-600">Total {total}</span>
 
           <Link
-            href={`/admin/agency/audit?${prevQuery.toString()}`}
+            href={`/admin/audit?${prevQuery.toString()}`}
             className={`rounded border px-3 py-1.5 font-semibold ${safePage === 1 ? "pointer-events-none opacity-40" : ""
               }`}
           >
@@ -261,7 +261,7 @@ export default async function AuditLogsPage({
           </span>
 
           <Link
-            href={`/admin/agency/audit?${nextQuery.toString()}`}
+            href={`/admin/audit?${nextQuery.toString()}`}
             className={`rounded border px-3 py-1.5 font-semibold ${safePage === totalPages ? "pointer-events-none opacity-40" : ""
               }`}
           >
