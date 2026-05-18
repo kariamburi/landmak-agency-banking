@@ -1,6 +1,7 @@
 import { mobileAdminGet } from "@/app/lib/mobileAdminApi";
 import { createWithdrawalChargeRuleAction } from "./actions";
 import ChargeStatusButton from "./ChargeStatusButton";
+import Link from "next/link";
 
 function money(v: any) {
     return `KES ${Number(v || 0).toLocaleString("en-KE")}`;
@@ -19,6 +20,14 @@ export default async function WithdrawalChargesPage() {
     return (
         <div className="space-y-5">
             <div className="rounded-t-2xl px-6 py-5 shadow">
+                <div className="mb-4">
+                    <Link
+                        href="/admin/mobile/withdrawals"
+                        className="inline-flex items-center rounded-md border border-slate-300 px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-50"
+                    >
+                        ← Back to Withdrawals
+                    </Link>
+                </div>
                 <p className="text-sm font-semibold text-slate-500">Mobile Banking</p>
                 <h1 className="mt-1 text-3xl text-slate-900">
                     Withdrawal Charges

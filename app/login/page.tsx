@@ -253,7 +253,7 @@ export default async function LoginPage({
         </div>
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {["Role Based", "Email OTP", "Verification Code", "Audit Logs"].map(
+          {["All Channels", "Member App", "Agent App", "Admin Console"].map(
             (item) => (
               <div
                 key={item}

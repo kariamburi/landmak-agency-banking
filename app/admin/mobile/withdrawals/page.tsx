@@ -199,8 +199,17 @@ export default async function MobileWithdrawalsPage({
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4 flex items-center justify-between border-b pb-4">
-                    <ExportMobileWithdrawalsButton withdrawals={filteredWithdrawals} />
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <ExportMobileWithdrawalsButton withdrawals={filteredWithdrawals} />
+
+                        <Link
+                            href="/admin/mobile/withdrawal-charges"
+                            className="rounded-md border border-[#0F3D2E] px-4 py-2 text-sm font-black text-[#0F3D2E] hover:bg-[#0F3D2E] hover:text-white"
+                        >
+                            Withdrawal Charges
+                        </Link>
+                    </div>
 
                     <p className="text-sm text-slate-500">
                         Total {total} • Page {safePage} of {totalPages}
