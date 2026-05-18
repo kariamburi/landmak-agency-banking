@@ -1,5 +1,8 @@
 import { mobileAdminGet } from "@/app/lib/mobileAdminApi";
-import { createWithdrawalChargeRuleAction } from "./actions";
+import {
+    createWithdrawalChargeRuleAction,
+    updateWithdrawalChargeRuleAction,
+} from "./actions";
 import ChargeStatusButton from "./ChargeStatusButton";
 import Link from "next/link";
 
@@ -28,6 +31,7 @@ export default async function WithdrawalChargesPage() {
                         ← Back to Withdrawals
                     </Link>
                 </div>
+
                 <p className="text-sm font-semibold text-slate-500">Mobile Banking</p>
                 <h1 className="mt-1 text-3xl text-slate-900">
                     Withdrawal Charges
@@ -96,15 +100,16 @@ export default async function WithdrawalChargesPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[850px] border-collapse text-[13px]">
+                    <table className="w-full min-w-[1250px] border-collapse text-[13px]">
                         <thead>
                             <tr className="bg-slate-100 text-slate-900">
-                                <th className="px-2 py-2 text-left font-bold">Range</th>
-                                <th className="px-2 py-2 text-left font-bold">Type</th>
-                                <th className="px-2 py-2 text-right font-bold">Value</th>
+                                <th className="px-2 py-2 text-left font-bold">Current Range</th>
+                                <th className="px-2 py-2 text-left font-bold">Current Type</th>
+                                <th className="px-2 py-2 text-right font-bold">Current Value</th>
                                 <th className="px-2 py-2 text-left font-bold">Status</th>
                                 <th className="px-2 py-2 text-left font-bold">Updated</th>
-                                <th className="px-2 py-2 text-left font-bold">Action</th>
+                                <th className="px-2 py-2 text-left font-bold">Edit Rule</th>
+                                <th className="px-2 py-2 text-left font-bold">Status Action</th>
                             </tr>
                         </thead>
 
@@ -112,7 +117,7 @@ export default async function WithdrawalChargesPage() {
                             {rules.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan={6}
+                                        colSpan={7}
                                         className="px-5 py-8 text-center text-slate-500"
                                     >
                                         No withdrawal charge rules found.
@@ -154,6 +159,52 @@ export default async function WithdrawalChargesPage() {
                                                 {r.updated_at
                                                     ? new Date(r.updated_at).toLocaleString("en-KE")
                                                     : "-"}
+                                            </td>
+
+                                            <td className="px-2 py-2">
+                                                <form
+                                                    action={updateWithdrawalChargeRuleAction}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    <input type="hidden" name="id" value={r.id} />
+
+                                                    <input
+                                                        name="min_amount"
+                                                        type="number"
+                                                        defaultValue={Number(r.min_amount || 0)}
+                                                        className="w-24 rounded-md border px-2 py-2 text-xs"
+                                                        required
+                                                    />
+
+                                                    <input
+                                                        name="max_amount"
+                                                        type="number"
+                                                        defaultValue={Number(r.max_amount || 0)}
+                                                        className="w-24 rounded-md border px-2 py-2 text-xs"
+                                                        required
+                                                    />
+
+                                                    <select
+                                                        name="charge_type"
+                                                        defaultValue={r.charge_type}
+                                                        className="w-28 rounded-md border px-2 py-2 text-xs"
+                                                    >
+                                                        <option value="flat">Flat</option>
+                                                        <option value="percentage">Percentage</option>
+                                                    </select>
+
+                                                    <input
+                                                        name="charge_value"
+                                                        type="number"
+                                                        defaultValue={Number(r.charge_value || 0)}
+                                                        className="w-24 rounded-md border px-2 py-2 text-xs"
+                                                        required
+                                                    />
+
+                                                    <button className="rounded-md bg-[#0F3D2E] px-3 py-2 text-xs font-black text-white">
+                                                        Save
+                                                    </button>
+                                                </form>
                                             </td>
 
                                             <td className="whitespace-nowrap px-2 py-2">
